@@ -1,0 +1,16 @@
+﻿Analyzing perfum_ahmed_gaper...                                 
+
+warning - Unused import: 'package:flutter_bloc/flutter_bloc.dart' - lib\core\network\auth_interceptor.dart:2:8 - unused_import
+  error - The argument type 'Stream<AuthState>' can't be assigned to the parameter type 'Listenable?'.  - lib\core\router\app_router.dart:46:24 - argument_type_not_assignable
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:52:44 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:53:39 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:54:42 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:57:22 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\core\router\app_router.dart:61:22 - unnecessary_underscores
+warning - Unused import: '../../domain/entities/user.dart' - lib\features\auth\presentation\bloc\auth_bloc.dart:5:8 - unused_import
+warning - The declaration '_refreshTokenKey' isn't referenced - lib\features\auth\presentation\bloc\auth_bloc.dart:9:14 - unused_element
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\features\auth\presentation\pages\user_form_page.dart:94:17 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\features\auth\presentation\pages\user_form_page.dart:106:19 - deprecated_member_use
+  error - The named parameter 'authBloc' is required, but there's no corresponding argument - test\widget_test.dart:16:30 - missing_required_argument
+  error - The named parameter 'userManagementBloc' is required, but there's no corresponding argument - test\widget_test.dart:16:30 - missing_required_argument
+

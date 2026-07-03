@@ -12,6 +12,10 @@
 .swiftpm/
 migrate_working_dir/
 
+#backend
+server/
+.env
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -43,3 +47,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Node.js / Server
+server/node_modules/
+server/.env
+server/.env.*
+*.log
+npm-debug.log*
