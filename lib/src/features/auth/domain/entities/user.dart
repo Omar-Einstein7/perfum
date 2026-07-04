@@ -1,36 +1,23 @@
-class User {
+import 'package:equatable/equatable.dart';
+
+class AppUser extends Equatable {
   final String id;
   final String email;
-  final String role;
-  final Map<String, bool> permissions;
-  final String status;
+  final String? name;
+  final String? photoUrl;
 
-  const User({
+  const AppUser({
     required this.id,
     required this.email,
-    required this.role,
-    required this.permissions,
-    required this.status,
+    this.name,
+    this.photoUrl,
   });
 
-  bool get isActive => status == 'active';
-  bool get isSuperadmin => role == 'superadmin';
+  factory AppUser.empty() => const AppUser(id: '', email: '');
 
-  bool hasPermission(String flag) => permissions[flag] == true;
+  bool get isEmpty => id.isEmpty;
+  bool get isNotEmpty => id.isNotEmpty;
 
-  User copyWith({
-    String? id,
-    String? email,
-    String? role,
-    Map<String, bool>? permissions,
-    String? status,
-  }) {
-    return User(
-      id: id ?? this.id,
-      email: email ?? this.email,
-      role: role ?? this.role,
-      permissions: permissions ?? this.permissions,
-      status: status ?? this.status,
-    );
-  }
+  @override
+  List<Object?> get props => [id, email, name, photoUrl];
 }

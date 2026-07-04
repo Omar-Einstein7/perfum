@@ -1,22 +1,32 @@
-import '../entities/session.dart';
-import '../entities/user.dart';
+import 'package:perfum_ahmed_gaper/src/utils/utils.dart';
+import 'package:perfum_ahmed_gaper/src/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
-  Future<Session> login(String email, String password);
-  Future<void> logout();
-  Future<User> getMe();
-  Future<List<User>> listUsers();
-  Future<User> createUser({
+  /// Stream of auth state changes. Emits AppUser when authenticated, null when not.
+  Stream<AppUser?> get onAuthStateChanged;
+
+  /// Sign in with email and password
+  FutureEither<AppUser> login({
     required String email,
     required String password,
-    required String role,
-    required Map<String, bool> permissions,
   });
-  Future<User> updateUser(
-    String id, {
-    String? role,
-    Map<String, bool>? permissions,
-    String? status,
+
+  /// Sign up with email, password, and optional name
+  FutureEither<AppUser> signUp({
+    required String name,
+    required String email,
+    required String password,
   });
-  Future<void> deleteUser(String id);
+
+  /// Send a password reset email
+  FutureEither<void> forgotPassword({
+    required String email,
+  });
+
+  /// Sign out the current user
+  FutureEither<void> logout();
+  
+  /// Check if the user is currently authenticated natively
+  FutureEither<AppUser?> checkAuthState();
 }
+

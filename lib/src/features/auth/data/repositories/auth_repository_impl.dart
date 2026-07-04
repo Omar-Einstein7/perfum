@@ -1,99 +1,99 @@
-import 'package:perfum_ahmed_gaper/src/services/secure_storage_service.dart';
-import '../../domain/entities/session.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../datasources/auth_remote_data_source.dart';
-import '../models/session_model.dart';
+import 'package:perfum_ahmed_gaper/src/imports/core_imports.dart';
+import 'package:perfum_ahmed_gaper/src/imports/packages_imports.dart';
 
-class ServerFailure implements Exception {
-  final String message;
-  ServerFailure(this.message);
-  @override
-  String toString() => message;
-}
-
-class NetworkFailure implements Exception {
-  final String message;
-  NetworkFailure(this.message);
-  @override
-  String toString() => message;
-}
+import 'package:perfum_ahmed_gaper/src/features/auth/domain/entities/user.dart';
+import 'package:perfum_ahmed_gaper/src/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSource dataSource;
-  final SecureStorageService secureStorage;
-
-  AuthRepositoryImpl({required this.dataSource, required this.secureStorage});
-
-  Future<void> _saveToken(String token) =>
-      secureStorage.write('jwt_token', token);
-  Future<void> _clearToken() => secureStorage.delete('jwt_token');
+  final AuthService _authService = AuthService.instance;
 
   @override
-  Future<Session> login(String email, String password) async {
-    final tokenModel = await dataSource.login(email, password);
-    await _saveToken(tokenModel.accessToken);
-    return SessionModel(
-      accessToken: tokenModel.accessToken,
-      refreshToken: tokenModel.refreshToken,
-      expiresIn: tokenModel.expiresIn,
-    ).toEntity();
+  Stream<AppUser?> get onAuthStateChanged {
+    return _authService.authStateChanges.map((userData) {
+      if (userData == null) return null;
+      return AppUser(
+        id: userData['id'] ?? '',
+        email: userData['email'] ?? '',
+        name: userData['name'],
+        photoUrl: userData['photoUrl'],
+      );
+    });
   }
 
   @override
-  Future<void> logout() async {
-    try {
-      await dataSource.logout();
-    } catch (_) {}
-    await _clearToken();
-  }
-
-  @override
-  Future<User> getMe() async {
-    final user = await dataSource.getMe();
-    return user;
-  }
-
-  @override
-  Future<List<User>> listUsers() async {
-    final users = await dataSource.listUsers();
-    return users;
-  }
-
-  @override
-  Future<User> createUser({
-    required String email,
+  FutureEither<AppUser> login({
+    required String email, 
     required String password,
-    required String role,
-    required Map<String, bool> permissions,
   }) async {
-    final user = await dataSource.createUser(
+    final result = await _authService.login(email: email, password: password);
+    
+    return result.flatMap((userData) {
+      if (userData == null) {
+        return left(const ServerFailure('Login failed: User record not found'));
+      }
+
+      final data = userData['user'] ?? userData;
+      final user = AppUser(
+        id: data['id'].toString(), 
+        email: data['email'] ?? email, 
+        name: data['name'],
+      );
+      
+      return right(user);
+    });
+  }
+
+  @override
+  FutureEither<AppUser> signUp({
+    required String name, 
+    required String email, 
+    required String password,
+  }) async {
+    final result = await _authService.signUp(
+      name: name,
       email: email,
       password: password,
-      role: role,
-      permissions: permissions,
     );
-    return user;
+
+    return result.flatMap((userData) {
+      if (userData == null) {
+        return left(const ServerFailure('Sign up failed: User record corrupted'));
+      }
+
+      final data = userData['user'] ?? userData;
+      final user = AppUser(
+        id: data['id'].toString(), 
+        email: data['email'] ?? email, 
+        name: name,
+      );
+      
+      return right(user);
+    });
   }
 
   @override
-  Future<User> updateUser(
-    String id, {
-    String? role,
-    Map<String, bool>? permissions,
-    String? status,
-  }) async {
-    final user = await dataSource.updateUser(
-      id,
-      role: role,
-      permissions: permissions,
-      status: status,
-    );
-    return user;
+  FutureEither<void> forgotPassword({required String email}) {
+    return _authService.forgotPassword(email: email);
   }
 
   @override
-  Future<void> deleteUser(String id) async {
-    await dataSource.deleteUser(id);
+  FutureEither<void> logout() {
+    return _authService.logout();
+  }
+
+  @override
+  FutureEither<AppUser?> checkAuthState() async {
+    final result = await _authService.getCurrentUser();
+    
+    return result.map((userData) {
+      if (userData == null) return null;
+
+      return AppUser(
+        id: userData['id'], 
+        email: userData['email'] ?? '', 
+        name: userData['name'],
+        photoUrl: userData['photoUrl'],
+      );
+    });
   }
 }

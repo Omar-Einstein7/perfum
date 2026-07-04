@@ -47,9 +47,6 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = context.theme.colorScheme;
     final tt = context.theme.textTheme;
-    final title = this.title;
-    final leading = this.leading;
-    final trailing = this.trailing;
 
     final cardColor = color ?? cs.surfaceContainerLow;
 
@@ -67,14 +64,14 @@ class AppCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                if (leading != null) ...[leading, const SizedBox(width: 12)],
+                if (leading != null) ...[leading!, const SizedBox(width: 12)],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (title != null)
                         Text(
-                          title,
+                          title!,
                           style: tt.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -89,13 +86,12 @@ class AppCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                ?trailing,
+                if (trailing != null) trailing!,
               ],
             ),
           ),
         Padding(
-          padding:
-              padding ??
+          padding: padding ??
               EdgeInsets.fromLTRB(
                 AppSpacing.md,
                 title == null ? AppSpacing.md : 0,
@@ -119,7 +115,11 @@ class AppCard extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: onTap != null
-          ? InkWell(onTap: onTap, borderRadius: AppBorders.card, child: content)
+          ? InkWell(
+              onTap: onTap,
+              borderRadius: AppBorders.card,
+              child: content,
+            )
           : content,
     );
   }

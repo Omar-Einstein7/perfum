@@ -1,23 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:perfum_ahmed_gaper/src/config/di/injection_container.dart'
-    as di;
-import 'package:perfum_ahmed_gaper/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:perfum_ahmed_gaper/src/features/auth/presentation/bloc/session_bloc.dart';
-import 'package:perfum_ahmed_gaper/src/features/auth/presentation/bloc/user_management_bloc.dart';
+import '../../imports/imports.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/presentation/providers/session_bloc.dart';
 
+/// A wrapper to initialize the chosen State Management library.
 class StateWrapper extends StatelessWidget {
   final Widget child;
 
-  const StateWrapper({super.key, required this.child});
+  const StateWrapper({
+    super.key,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => di.getIt<SessionBloc>()),
-        BlocProvider(create: (_) => di.getIt<AuthBloc>()),
-        BlocProvider(create: (_) => di.getIt<UserManagementBloc>()),
+        BlocProvider(create: (_) => SessionBloc(repository: AuthRepositoryImpl())),
       ],
       child: child,
     );

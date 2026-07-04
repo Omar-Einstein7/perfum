@@ -11,6 +11,11 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+.specify/
+.speckit/
+.opencode/
+DESIGN.md
+PLAN.md
 
 #backend
 server/
