@@ -3,7 +3,7 @@ import 'package:fpdart/fpdart.dart' hide Unit;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/entities/unit.dart';
-import 'package:perfum_ahmed_gaper/src/features/units/domain/repositories/unit_repository.dart';
+import 'package:perfum_ahmed_gaper/src/features/units/domain/entities/paginated_response.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/usecases/create_unit_usecase.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/usecases/delete_unit_usecase.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/usecases/get_unit_usecase.dart';
@@ -50,22 +50,22 @@ void main() {
     blocTest<UnitCubit, UnitState>(
       'emits [UnitLoading, UnitLoaded] on success',
       build: () {
-        when(() => mockListUnits(page: 1, limit: 20, search: '')).thenAnswer(
-          (_) async => right(PaginatedUnits(units: [], total: 0, page: 1, pages: 1)),
+        when(() => mockListUnits(page: 1, limit: 20, search: any(named: 'search'))).thenAnswer(
+          (_) async => right(PaginatedResponse<Unit>(data: [], total: 0, page: 1, limit: 20, pages: 1)),
         );
         return cubit;
       },
       act: (cubit) => cubit.loadUnits(),
       expect: () => [
         const UnitLoading(),
-        const UnitLoaded(units: [], total: 0, page: 1, pages: 1),
+        UnitLoaded(units: [], total: 0, page: 1, pages: 1),
       ],
     );
 
     blocTest<UnitCubit, UnitState>(
       'emits [UnitLoading, UnitError] on failure',
       build: () {
-        when(() => mockListUnits(page: 1, limit: 20, search: '')).thenAnswer(
+        when(() => mockListUnits(page: 1, limit: 20, search: any(named: 'search'))).thenAnswer(
           (_) async => left(ServerFailure('Failed to load')),
         );
         return cubit;
@@ -78,34 +78,63 @@ void main() {
     );
   });
 
-  group('createUnit', () {
+  group('loadUnit', () {
     blocTest<UnitCubit, UnitState>(
-      'emits [UnitLoading, UnitLoaded] on success',
+      'emits [UnitLoading, UnitDetailLoaded] on success',
       build: () {
-        when(() => mockCreateUnit('Carton')).thenAnswer(
-          (_) async => right(Unit(id: '1', name: 'Carton', createdAt: DateTime.now(), updatedAt: DateTime.now())),
-        );
-        when(() => mockListUnits(page: 1, limit: 20, search: '')).thenAnswer(
-          (_) async => right(PaginatedUnits(units: [], total: 0, page: 1, pages: 1)),
-        );
+        final now = DateTime.now();
+        final unit = Unit(id: '1', name: 'Carton', abbreviation: 'ctn', type: UnitType.count, createdAt: now, updatedAt: now);
+        when(() => mockGetUnit('1')).thenAnswer((_) async => right(unit));
         return cubit;
       },
-      act: (cubit) => cubit.createUnit('Carton'),
+      act: (cubit) => cubit.loadUnit('1'),
       expect: () => [
         const UnitLoading(),
-        const UnitLoaded(units: [], total: 0, page: 1, pages: 1),
+        isA<UnitDetailLoaded>(),
       ],
     );
 
     blocTest<UnitCubit, UnitState>(
       'emits [UnitLoading, UnitError] on failure',
       build: () {
-        when(() => mockCreateUnit('Carton')).thenAnswer(
-          (_) async => left(ServerFailure('Unit name already exists')),
-        );
+        when(() => mockGetUnit('1')).thenAnswer((_) async => left(ServerFailure('Not found')));
         return cubit;
       },
-      act: (cubit) => cubit.createUnit('Carton'),
+      act: (cubit) => cubit.loadUnit('1'),
+      expect: () => [
+        const UnitLoading(),
+        const UnitError(message: 'Not found'),
+      ],
+    );
+  });
+
+  group('createUnit', () {
+    blocTest<UnitCubit, UnitState>(
+      'emits [UnitLoading, UnitLoaded] on success',
+      build: () {
+        final now = DateTime.now();
+        final unit = Unit(id: '1', name: 'Carton', abbreviation: 'ctn', type: UnitType.count, createdAt: now, updatedAt: now);
+        when(() => mockCreateUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count, description: any(named: 'description')))
+            .thenAnswer((_) async => right(unit));
+        when(() => mockListUnits(page: 1, limit: 20, search: any(named: 'search')))
+            .thenAnswer((_) async => right(PaginatedResponse<Unit>(data: [], total: 0, page: 1, limit: 20, pages: 1)));
+        return cubit;
+      },
+      act: (cubit) => cubit.createUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count),
+      expect: () => [
+        const UnitLoading(),
+        UnitLoaded(units: [], total: 0, page: 1, pages: 1),
+      ],
+    );
+
+    blocTest<UnitCubit, UnitState>(
+      'emits [UnitLoading, UnitError] on failure',
+      build: () {
+        when(() => mockCreateUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count, description: any(named: 'description')))
+            .thenAnswer((_) async => left(ServerFailure('Unit name already exists')));
+        return cubit;
+      },
+      act: (cubit) => cubit.createUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count),
       expect: () => [
         const UnitLoading(),
         const UnitError(message: 'Unit name already exists'),
@@ -117,12 +146,11 @@ void main() {
     blocTest<UnitCubit, UnitState>(
       'emits [UnitLoading, UnitError] on failure',
       build: () {
-        when(() => mockUpdateUnit('1', 'Box')).thenAnswer(
-          (_) async => left(ServerFailure('Unit not found')),
-        );
+        when(() => mockUpdateUnit(id: '1', name: 'Box', abbreviation: any(named: 'abbreviation'), type: any(named: 'type'), description: any(named: 'description')))
+            .thenAnswer((_) async => left(ServerFailure('Unit not found')));
         return cubit;
       },
-      act: (cubit) => cubit.updateUnit('1', 'Box'),
+      act: (cubit) => cubit.updateUnit(id: '1', name: 'Box'),
       expect: () => [
         const UnitLoading(),
         const UnitError(message: 'Unit not found'),
@@ -135,9 +163,8 @@ void main() {
       'emits [UnitLoading, UnitDeleted, UnitLoading, UnitLoaded] on success',
       build: () {
         when(() => mockDeleteUnit('1')).thenAnswer((_) async => right(null));
-        when(() => mockListUnits(page: 1, limit: 20, search: '')).thenAnswer(
-          (_) async => right(const PaginatedUnits(units: [], total: 0, page: 1, pages: 1)),
-        );
+        when(() => mockListUnits(page: 1, limit: 20, search: any(named: 'search')))
+            .thenAnswer((_) async => right(PaginatedResponse<Unit>(data: [], total: 0, page: 1, limit: 20, pages: 1)));
         return cubit;
       },
       act: (cubit) => cubit.deleteUnit('1'),
@@ -145,7 +172,7 @@ void main() {
         const UnitLoading(),
         const UnitDeleted(),
         const UnitLoading(),
-        const UnitLoaded(units: [], total: 0, page: 1, pages: 1),
+        UnitLoaded(units: [], total: 0, page: 1, pages: 1),
       ],
     );
 
