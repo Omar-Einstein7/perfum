@@ -1,8 +1,11 @@
 import 'package:fpdart/fpdart.dart' hide Unit;
 import 'package:perfum_ahmed_gaper/src/utils/failure.dart';
 import '../../domain/entities/unit.dart';
+import '../../domain/entities/paginated_response.dart';
 import '../../domain/repositories/unit_repository.dart';
 import '../datasources/unit_remote_data_source.dart';
+import '../models/unit_model.dart';
+import '../models/unit_list_response.dart';
 
 class UnitRepositoryImpl implements UnitRepository {
   final UnitRemoteDataSource dataSource;
@@ -10,67 +13,31 @@ class UnitRepositoryImpl implements UnitRepository {
   UnitRepositoryImpl({required this.dataSource});
 
   @override
-  Future<Either<Failure, PaginatedUnits>> list({int page = 1, int limit = 20, String search = ''}) async {
-    try {
-      final response = await dataSource.list(page: page, limit: limit, search: search);
-      return right(PaginatedUnits(
-        units: response.units.map((m) => m.toEntity()).toList(),
-        total: response.total,
-        page: response.page,
-        pages: response.pages,
-      ));
-    } on ServerFailure catch (e) {
-      return left(ServerFailure(e.message));
-    } catch (e) {
-      return left(ServerFailure('Unexpected error: $e'));
-    }
+  Future<Either<Failure, PaginatedResponse<Unit>>> listUnits({int page = 1, int limit = 20, String? search}) async {
+    final result = await dataSource.listUnits(page: page, limit: limit, search: search);
+    return result.map((response) => response.toEntity());
   }
 
   @override
-  Future<Either<Failure, Unit>> getById(String id) async {
-    try {
-      final model = await dataSource.getById(id);
-      return right(model.toEntity());
-    } on ServerFailure catch (e) {
-      return left(ServerFailure(e.message));
-    } catch (e) {
-      return left(ServerFailure('Unexpected error: $e'));
-    }
+  Future<Either<Failure, Unit>> getUnit(String id) async {
+    final result = await dataSource.getUnit(id);
+    return result.map((model) => model.toEntity());
   }
 
   @override
-  Future<Either<Failure, Unit>> create(String name) async {
-    try {
-      final model = await dataSource.create(name);
-      return right(model.toEntity());
-    } on ServerFailure catch (e) {
-      return left(ServerFailure(e.message));
-    } catch (e) {
-      return left(ServerFailure('Unexpected error: $e'));
-    }
+  Future<Either<Failure, Unit>> createUnit({required String name, required String abbreviation, required UnitType type, String? description}) async {
+    final result = await dataSource.createUnit(name: name, abbreviation: abbreviation, type: type, description: description);
+    return result.map((model) => model.toEntity());
   }
 
   @override
-  Future<Either<Failure, Unit>> update(String id, String name) async {
-    try {
-      final model = await dataSource.update(id, name);
-      return right(model.toEntity());
-    } on ServerFailure catch (e) {
-      return left(ServerFailure(e.message));
-    } catch (e) {
-      return left(ServerFailure('Unexpected error: $e'));
-    }
+  Future<Either<Failure, Unit>> updateUnit({required String id, String? name, String? abbreviation, UnitType? type, String? description}) async {
+    final result = await dataSource.updateUnit(id: id, name: name, abbreviation: abbreviation, type: type, description: description);
+    return result.map((model) => model.toEntity());
   }
 
   @override
-  Future<Either<Failure, void>> delete(String id) async {
-    try {
-      await dataSource.delete(id);
-      return right(null);
-    } on ServerFailure catch (e) {
-      return left(ServerFailure(e.message));
-    } catch (e) {
-      return left(ServerFailure('Unexpected error: $e'));
-    }
+  Future<Either<Failure, void>> deleteUnit(String id) async {
+    return dataSource.deleteUnit(id);
   }
 }
