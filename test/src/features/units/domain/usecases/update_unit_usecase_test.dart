@@ -17,19 +17,22 @@ void main() {
     useCase = UpdateUnitUseCase(repository: repository);
   });
 
-  test('should call repository.update and return Unit on success', () async {
-    final unit = Unit(id: '1', name: 'Box', createdAt: DateTime.now(), updatedAt: DateTime.now());
-    when(() => repository.update('1', 'Box')).thenAnswer((_) async => right(unit));
+  test('should call repository.updateUnit and return Unit on success', () async {
+    final now = DateTime.now();
+    final unit = Unit(id: '1', name: 'Box', abbreviation: 'bx', type: UnitType.count, createdAt: now, updatedAt: now);
+    when(() => repository.updateUnit(id: '1', name: 'Box', abbreviation: any(named: 'abbreviation'), type: any(named: 'type'), description: any(named: 'description')))
+        .thenAnswer((_) async => right(unit));
 
-    final result = await useCase('1', 'Box');
+    final result = await useCase(id: '1', name: 'Box');
     expect(result.fold((l) => l, (r) => r), unit);
-    verify(() => repository.update('1', 'Box')).called(1);
+    verify(() => repository.updateUnit(id: '1', name: 'Box', abbreviation: null, type: null, description: null)).called(1);
   });
 
   test('should return Failure when repository fails', () async {
-    when(() => repository.update('999', 'X')).thenAnswer((_) async => left(ServerFailure('Unit not found')));
+    when(() => repository.updateUnit(id: '999', name: 'X', abbreviation: any(named: 'abbreviation'), type: any(named: 'type'), description: any(named: 'description')))
+        .thenAnswer((_) async => left(ServerFailure('Unit not found')));
 
-    final result = await useCase('999', 'X');
+    final result = await useCase(id: '999', name: 'X');
     expect(result.fold((l) => l, (r) => r), isA<ServerFailure>());
   });
 }
