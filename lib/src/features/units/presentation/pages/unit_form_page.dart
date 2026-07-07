@@ -7,9 +7,7 @@ import 'package:perfum_ahmed_gaper/src/features/units/presentation/widgets/unit_
 
 class UnitFormPage extends StatefulWidget {
   final Unit? unit;
-
   const UnitFormPage({super.key, this.unit});
-
   @override
   State<UnitFormPage> createState() => _UnitFormPageState();
 }
@@ -17,6 +15,9 @@ class UnitFormPage extends StatefulWidget {
 class _UnitFormPageState extends State<UnitFormPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
+  late final TextEditingController _abbreviationController;
+  late final TextEditingController _descriptionController;
+  UnitType? _selectedType;
 
   bool get isEditing => widget.unit != null;
 
@@ -24,21 +25,28 @@ class _UnitFormPageState extends State<UnitFormPage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.unit?.name ?? '');
+    _abbreviationController = TextEditingController(text: widget.unit?.abbreviation ?? '');
+    _descriptionController = TextEditingController(text: widget.unit?.description ?? '');
+    _selectedType = widget.unit?.type;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _abbreviationController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.select((UnitCubit c) => c.state is UnitLoading);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isEditing ? 'Edit Unit' : 'Add Unit'),
-      ),
+      appBar: AppBar(title: Text(isEditing ? 'Edit Unit' : 'Add Unit')),
       body: BlocListener<UnitCubit, UnitState>(
+        listenWhen: (previous, current) =>
+            current is UnitLoaded || current is UnitError,
         listener: (context, state) {
           if (state is UnitLoaded || state is UnitInitial) {
             Navigator.of(context).pop();
@@ -51,12 +59,18 @@ class _UnitFormPageState extends State<UnitFormPage> {
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: UnitForm(
-            formKey: _formKey,
-            nameController: _nameController,
-            initialName: widget.unit?.name,
-            isEditing: isEditing,
-            onSave: _onSave,
+          child: SingleChildScrollView(
+            child: UnitForm(
+              formKey: _formKey,
+              nameController: _nameController,
+              abbreviationController: _abbreviationController,
+              descriptionController: _descriptionController,
+              selectedType: _selectedType,
+              onTypeChanged: (type) => setState(() => _selectedType = type),
+              isEditing: isEditing,
+              isLoading: isLoading,
+              onSave: _onSave,
+            ),
           ),
         ),
       ),
@@ -65,12 +79,26 @@ class _UnitFormPageState extends State<UnitFormPage> {
 
   void _onSave() {
     if (!_formKey.currentState!.validate()) return;
-    final name = _nameController.text.trim();
     final cubit = context.read<UnitCubit>();
     if (isEditing) {
-      cubit.updateUnit(widget.unit!.id, name);
+      cubit.updateUnit(
+        id: widget.unit!.id,
+        name: _nameController.text.trim(),
+        abbreviation: _abbreviationController.text.trim(),
+        type: _selectedType,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      );
     } else {
-      cubit.createUnit(name);
+      cubit.createUnit(
+        name: _nameController.text.trim(),
+        abbreviation: _abbreviationController.text.trim(),
+        type: _selectedType!,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      );
     }
   }
 }
