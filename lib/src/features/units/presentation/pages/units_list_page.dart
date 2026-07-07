@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:perfum_ahmed_gaper/src/features/units/domain/entities/unit.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/presentation/bloc/unit_cubit.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/presentation/bloc/unit_state.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/presentation/pages/unit_form_page.dart';
+import 'package:perfum_ahmed_gaper/src/features/units/presentation/pages/unit_detail_page.dart';
+import 'package:perfum_ahmed_gaper/src/features/units/presentation/widgets/unit_list_tile.dart';
 
 class UnitsListPage extends StatefulWidget {
   const UnitsListPage({super.key});
@@ -42,12 +43,10 @@ class _UnitsListPageState extends State<UnitsListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Units of Measure'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _navigateToForm(context),
-          ),
-        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _navigateToForm(context),
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -70,7 +69,7 @@ class _UnitsListPageState extends State<UnitsListPage> {
                 if (state is UnitDeleted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Unit deleted successfully'),
+                      content: Text('Unit deactivated successfully'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -111,21 +110,11 @@ class _UnitsListPageState extends State<UnitsListPage> {
                             itemCount: state.units.length,
                             itemBuilder: (context, index) {
                               final unit = state.units[index];
-                              return ListTile(
-                                title: Text(unit.name),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () => _navigateToForm(context, unit: unit),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () => _confirmDelete(context, unit.id, unit.name, state.page),
-                                    ),
-                                  ],
-                                ),
+                              return UnitListTile(
+                                unit: unit,
+                                onTap: () => _navigateToDetail(context, unit.id),
+                                onEdit: () => _navigateToForm(context, unit: unit),
+                                onDelete: () => _confirmDeactivate(context, unit.id, unit.name, state.page),
                               );
                             },
                           ),
@@ -171,7 +160,7 @@ class _UnitsListPageState extends State<UnitsListPage> {
     );
   }
 
-  void _navigateToForm(BuildContext context, {Unit? unit}) {
+  void _navigateToForm(BuildContext context, {dynamic unit}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
@@ -182,12 +171,24 @@ class _UnitsListPageState extends State<UnitsListPage> {
     );
   }
 
-  void _confirmDelete(BuildContext context, String id, String name, int currentPage) {
+  void _navigateToDetail(BuildContext context, String unitId) {
+    context.read<UnitCubit>().loadUnit(unitId);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<UnitCubit>(),
+          child: UnitDetailPage(unitId: unitId),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeactivate(BuildContext context, String id, String name, int currentPage) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Unit'),
-        content: Text('Are you sure you want to delete "$name"?'),
+        title: const Text('Deactivate Unit'),
+        content: Text('Are you sure you want to deactivate "$name"?'),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
           TextButton(
@@ -195,7 +196,7 @@ class _UnitsListPageState extends State<UnitsListPage> {
               Navigator.of(ctx).pop();
               context.read<UnitCubit>().deleteUnit(id, currentPage: currentPage);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Deactivate', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
