@@ -17,19 +17,22 @@ void main() {
     useCase = CreateUnitUseCase(repository: repository);
   });
 
-  test('should call repository.create and return Unit on success', () async {
-    final unit = Unit(id: '1', name: 'Carton', createdAt: DateTime.now(), updatedAt: DateTime.now());
-    when(() => repository.create('Carton')).thenAnswer((_) async => right(unit));
+  test('should call repository.createUnit and return Unit on success', () async {
+    final now = DateTime.now();
+    final unit = Unit(id: '1', name: 'Carton', abbreviation: 'ctn', type: UnitType.count, createdAt: now, updatedAt: now);
+    when(() => repository.createUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count, description: any(named: 'description')))
+        .thenAnswer((_) async => right(unit));
 
-    final result = await useCase('Carton');
+    final result = await useCase(name: 'Carton', abbreviation: 'ctn', type: UnitType.count);
     expect(result.fold((l) => l, (r) => r), unit);
-    verify(() => repository.create('Carton')).called(1);
+    verify(() => repository.createUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count, description: null)).called(1);
   });
 
   test('should return Failure when repository fails', () async {
-    when(() => repository.create('Carton')).thenAnswer((_) async => left(ServerFailure('Unit name already exists')));
+    when(() => repository.createUnit(name: 'Carton', abbreviation: 'ctn', type: UnitType.count, description: any(named: 'description')))
+        .thenAnswer((_) async => left(ServerFailure('Unit name already exists')));
 
-    final result = await useCase('Carton');
+    final result = await useCase(name: 'Carton', abbreviation: 'ctn', type: UnitType.count);
     expect(result.fold((l) => l, (r) => r), isA<ServerFailure>());
   });
 }
