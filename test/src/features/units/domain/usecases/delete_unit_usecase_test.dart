@@ -16,16 +16,18 @@ void main() {
     useCase = DeleteUnitUseCase(repository: repository);
   });
 
-  test('should call repository.delete and return void on success', () async {
-    when(() => repository.delete('1')).thenAnswer((_) async => right(null));
+  test('should call repository.deleteUnit and return void on success', () async {
+    when(() => repository.deleteUnit('1')).thenAnswer((_) async => right(null));
 
     final result = await useCase('1');
     expect(result.isRight(), true);
-    verify(() => repository.delete('1')).called(1);
+    verify(() => repository.deleteUnit('1')).called(1);
   });
 
   test('should return Failure when repository fails', () async {
-    when(() => repository.delete('1')).thenAnswer((_) async => left(ServerFailure('Cannot delete unit: it is referenced by 3 material(s)')));
+    when(() => repository.deleteUnit('1')).thenAnswer(
+      (_) async => left(ServerFailure('Cannot delete unit: it is referenced by 3 material(s)')),
+    );
 
     final result = await useCase('1');
     expect(result.fold((l) => l, (r) => null), isA<ServerFailure>());
