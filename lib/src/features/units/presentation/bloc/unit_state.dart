@@ -29,6 +29,13 @@ class UnitLoaded extends UnitState {
   List<Object?> get props => [units, total, page, pages];
 }
 
+class UnitDetailLoaded extends UnitState {
+  final Unit unit;
+  const UnitDetailLoaded({required this.unit});
+  @override
+  List<Object?> get props => [unit];
+}
+
 class UnitDeleted extends UnitState {
   const UnitDeleted();
   @override
@@ -37,9 +44,7 @@ class UnitDeleted extends UnitState {
 
 class UnitError extends UnitState {
   final String message;
-
   const UnitError({required this.message});
-
   @override
   List<Object?> get props => [message];
 }
