@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:perfum_ahmed_gaper/src/features/units/domain/entities/unit.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/usecases/create_unit_usecase.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/usecases/delete_unit_usecase.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/domain/usecases/get_unit_usecase.dart';
@@ -21,13 +22,13 @@ class UnitCubit extends Cubit<UnitState> {
     required this.deleteUnitUseCase,
   }) : super(const UnitInitial());
 
-  Future<void> loadUnits({int page = 1, int limit = 20, String search = ''}) async {
+  Future<void> loadUnits({int page = 1, int limit = 20, String? search}) async {
     emit(const UnitLoading());
     final result = await listUnitsUseCase(page: page, limit: limit, search: search);
     result.fold(
       (failure) => emit(UnitError(message: failure.message)),
       (paginated) => emit(UnitLoaded(
-        units: paginated.units,
+        units: paginated.data,
         total: paginated.total,
         page: paginated.page,
         pages: paginated.pages,
@@ -35,18 +36,27 @@ class UnitCubit extends Cubit<UnitState> {
     );
   }
 
-  Future<void> createUnit(String name) async {
+  Future<void> loadUnit(String id) async {
     emit(const UnitLoading());
-    final result = await createUnitUseCase(name);
+    final result = await getUnitUseCase(id);
+    result.fold(
+      (failure) => emit(UnitError(message: failure.message)),
+      (unit) => emit(UnitDetailLoaded(unit: unit)),
+    );
+  }
+
+  Future<void> createUnit({required String name, required String abbreviation, required UnitType type, String? description}) async {
+    emit(const UnitLoading());
+    final result = await createUnitUseCase(name: name, abbreviation: abbreviation, type: type, description: description);
     result.fold(
       (failure) => emit(UnitError(message: failure.message)),
       (_) => loadUnits(),
     );
   }
 
-  Future<void> updateUnit(String id, String name) async {
+  Future<void> updateUnit({required String id, String? name, String? abbreviation, UnitType? type, String? description}) async {
     emit(const UnitLoading());
-    final result = await updateUnitUseCase(id, name);
+    final result = await updateUnitUseCase(id: id, name: name, abbreviation: abbreviation, type: type, description: description);
     result.fold(
       (failure) => emit(UnitError(message: failure.message)),
       (_) => loadUnits(),
