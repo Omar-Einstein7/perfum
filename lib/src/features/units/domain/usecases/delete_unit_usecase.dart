@@ -6,5 +6,5 @@ class DeleteUnitUseCase {
   final UnitRepository repository;
   DeleteUnitUseCase({required this.repository});
 
-  Future<Either<Failure, void>> call(String id) => repository.delete(id);
+  Future<Either<Failure, void>> call(String id) => repository.deleteUnit(id);
 }
