@@ -1,5 +1,5 @@
 export 'domain/entities/unit.dart';
-export 'domain/repositories/unit_repository.dart' show PaginatedUnits, UnitRepository;
+export 'domain/repositories/unit_repository.dart' show UnitRepository;
 export 'domain/usecases/create_unit_usecase.dart';
 export 'domain/usecases/delete_unit_usecase.dart';
 export 'domain/usecases/get_unit_usecase.dart';
