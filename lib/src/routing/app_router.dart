@@ -16,6 +16,8 @@ import 'package:perfum_ahmed_gaper/src/features/home/presentation/screens/home_p
 import 'package:perfum_ahmed_gaper/src/features/onboarding/presentation/screens/onboarding_page.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/presentation/bloc/unit_cubit.dart';
 import 'package:perfum_ahmed_gaper/src/features/units/presentation/pages/units_list_page.dart';
+import 'package:perfum_ahmed_gaper/src/features/units/presentation/pages/unit_form_page.dart';
+import 'package:perfum_ahmed_gaper/src/features/units/presentation/pages/unit_detail_page.dart';
 
 /// Maps a UI route path to its required permission flag.
 /// Returns null if any authenticated user may access the route.
@@ -120,7 +122,29 @@ final GoRouter appRouter = GoRouter(
     // --- Stub routes for future modules (screens not yet built) ---
     // These exist so AppRoutes constants resolve and the permission map works.
     // Replace builder with real screen when each module is implemented.
-    GoRoute(path: AppRoutes.units,          builder: (c, s) => BlocProvider(create: (_) => sl<UnitCubit>(), child: const UnitsListPage())),
+    GoRoute(
+      path: AppRoutes.units,
+      builder: (c, s) => BlocProvider(create: (_) => sl<UnitCubit>(), child: const UnitsListPage()),
+      routes: [
+        GoRoute(
+          path: 'new',
+          builder: (c, s) => BlocProvider(create: (_) => sl<UnitCubit>(), child: const UnitFormPage()),
+        ),
+        GoRoute(
+          path: ':id',
+          builder: (c, s) {
+            final id = s.pathParameters['id']!;
+            return BlocProvider(create: (_) => sl<UnitCubit>(), child: UnitDetailPage(unitId: id));
+          },
+          routes: [
+            GoRoute(
+              path: 'edit',
+              builder: (c, s) => BlocProvider(create: (_) => sl<UnitCubit>(), child: const UnitFormPage()),
+            ),
+          ],
+        ),
+      ],
+    ),
     GoRoute(path: AppRoutes.categories,     builder: (c, s) => _stub('Categories')),
     GoRoute(path: AppRoutes.materials,      builder: (c, s) => _stub('Materials')),
     GoRoute(path: AppRoutes.suppliers,      builder: (c, s) => _stub('Suppliers')),
