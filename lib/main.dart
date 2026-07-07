@@ -1,6 +1,7 @@
 import 'src/imports/core_imports.dart';
 import 'src/imports/packages_imports.dart';
 import 'src/app.dart';
+import 'src/services/service_locator.dart';
 
 
 Future<void> main() async {
@@ -11,6 +12,7 @@ Future<void> main() async {
   await dotenv.load(fileName: '.env');
   
   await AppConfig.init();
+  await setupServiceLocator();
 
   runApp(
     const LocalizationWrapper(

@@ -68,6 +68,17 @@ class AuthService {
     });
   }
 
+  /// Called by the repository after a successful DataSource login/signup.
+  void updateAuthState(Map<String, dynamic>? data) {
+    _authStateController.add(data);
+  }
+
+  /// Called by the JWT interceptor when a 401 is received.
+  /// Emits null to the auth state stream, triggering SessionBloc to go unauthenticated.
+  void signalUnauthenticated() {
+    _authStateController.add(null);
+  }
+
   void dispose() {
     _authStateController.close();
   }

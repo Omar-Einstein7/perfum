@@ -32,7 +32,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       } else if (canPop) {
         context.pop();
       } else {
-        context.go(AppRoutes.home);
+        context.go(AppRoutes.dashboard);
       }
     }
 

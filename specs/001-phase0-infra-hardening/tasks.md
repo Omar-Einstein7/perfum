@@ -31,9 +31,9 @@ ahead. Complete tasks in order within each phase.
 
 **Purpose**: Install the one missing dependency and create the single new file skeleton.
 
-- [ ] T001 Add `go_router` refresh helper dependency — open `pubspec.yaml` and confirm `go_router: ^17.1.0` is already present (it is); no new package needed. Document this as confirmed.
+- [X] T001 Add `go_router` refresh helper dependency — open `pubspec.yaml` and confirm `go_router: ^17.1.0` is already present (it is); no new package needed. Document this as confirmed.
 
-- [ ] T002 Create empty file `lib/src/services/service_locator.dart` with this exact skeleton:
+- [X] T002 Create empty file `lib/src/services/service_locator.dart` with this exact skeleton:
   ```dart
   import 'package:get_it/get_it.dart';
 
@@ -46,7 +46,7 @@ ahead. Complete tasks in order within each phase.
   ```
   No other content. Save the file.
 
-- [ ] T003 Create empty file `lib/src/routing/go_router_refresh_stream.dart` with this exact content:
+- [X] T003 Create empty file `lib/src/routing/go_router_refresh_stream.dart` with this exact content:
   ```dart
   import 'dart:async';
   import 'package:flutter/foundation.dart';
@@ -80,7 +80,7 @@ Complete ALL of these before touching any user-story phase.
 
 **⚠️ CRITICAL**: Do not start Phase 3, 4, or 5 until this phase is 100% complete.
 
-- [ ] T004 Add `PermissionFailure` to `lib/src/utils/failure.dart`.
+- [X] T004 Add `PermissionFailure` to `lib/src/utils/failure.dart`.
   Open the file. After the last existing subclass (`UnknownFailure`), add exactly:
   ```dart
   class PermissionFailure extends Failure {
@@ -89,7 +89,7 @@ Complete ALL of these before touching any user-story phase.
   ```
   Do not change any other line in the file.
 
-- [ ] T005 [P] Update `lib/src/features/auth/domain/entities/user.dart` — replace the entire file content with:
+- [X] T005 [P] Update `lib/src/features/auth/domain/entities/user.dart` — replace the entire file content with:
   ```dart
   import 'package:equatable/equatable.dart';
 
@@ -131,7 +131,7 @@ Complete ALL of these before touching any user-story phase.
   ```
   Save the file.
 
-- [ ] T006 [P] Replace the entire content of `lib/src/routing/app_routes.dart` with:
+- [X] T006 [P] Replace the entire content of `lib/src/routing/app_routes.dart` with:
   ```dart
   /// Centralized route path constants for GoRouter.
   /// All paths are UI routes (browser URL). API paths are NOT stored here.
@@ -199,7 +199,7 @@ Complete ALL of these before touching any user-story phase.
   ```
   Save the file.
 
-- [ ] T007 [P] Run `flutter analyze lib/src/utils/failure.dart lib/src/features/auth/domain/entities/user.dart lib/src/routing/app_routes.dart` and fix any analysis errors before continuing. Expected result: zero issues.
+- [X] T007 [P] Run `flutter analyze lib/src/utils/failure.dart lib/src/features/auth/domain/entities/user.dart lib/src/routing/app_routes.dart` and fix any analysis errors before continuing. Expected result: zero issues.
 
 **Checkpoint Phase 2**: `flutter analyze` on the three files above reports zero errors.
 
@@ -214,7 +214,7 @@ No protected content renders before the auth gate.
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Add the JWT interceptor to `lib/src/config/app_config.dart`.
+- [X] T008 [US1] Add the JWT interceptor to `lib/src/config/app_config.dart`.
   Open the file. At the TOP, add this import after the existing imports:
   ```dart
   import 'package:perfum_ahmed_gaper/src/services/service_locator.dart';
@@ -250,7 +250,7 @@ No protected content renders before the auth gate.
   IMPORTANT: This interceptor must be the LAST interceptor added (after the logging one), so errors flow through logging first.
   Save the file.
 
-- [ ] T009 [US1] Add `signalUnauthenticated()` method to `lib/src/services/auth_service.dart`.
+- [X] T009 [US1] Add `signalUnauthenticated()` method to `lib/src/services/auth_service.dart`.
   Open the file. Inside the `AuthService` class body, add this public method (place it after the existing `getCurrentUser()` method and before `dispose()`):
   ```dart
   /// Called by the JWT interceptor when a 401 is received.
@@ -261,7 +261,7 @@ No protected content renders before the auth gate.
   ```
   Do NOT change any other method. Save the file.
 
-- [ ] T010 [US1] Register Phase 0 services in `lib/src/services/service_locator.dart`.
+- [X] T010 [US1] Register Phase 0 services in `lib/src/services/service_locator.dart`.
   Replace the `// Phase 0 registrations added in T010–T016` comment with:
   ```dart
     // --- Infrastructure layer (no dependencies) ---
@@ -287,7 +287,7 @@ No protected content renders before the auth gate.
   ```
   Save the file.
 
-- [ ] T011 [US1] Register Auth repository and blocs in `lib/src/services/service_locator.dart`.
+- [X] T011 [US1] Register Auth repository and blocs in `lib/src/services/service_locator.dart`.
   After the infrastructure registrations added in T010, add:
   ```dart
     // --- Data layer ---
@@ -315,7 +315,7 @@ No protected content renders before the auth gate.
   ```
   Save the file.
 
-- [ ] T012 [US1] Add boot-failure logging to `lib/src/services/service_locator.dart`.
+- [X] T012 [US1] Add boot-failure logging to `lib/src/services/service_locator.dart`.
   Wrap the entire body of `setupServiceLocator()` in a try/catch:
   ```dart
   Future<void> setupServiceLocator() async {
@@ -333,7 +333,7 @@ No protected content renders before the auth gate.
   `AppLogger.error('[FATAL] setupServiceLocator failed', error: e, stackTrace: stackTrace);`
   Save the file.
 
-- [ ] T013 [US1] Update `lib/main.dart` to call `setupServiceLocator()`.
+- [X] T013 [US1] Update `lib/main.dart` to call `setupServiceLocator()`.
   Open `lib/main.dart`. Add this import at the top:
   ```dart
   import 'src/services/service_locator.dart';
@@ -347,7 +347,7 @@ No protected content renders before the auth gate.
   ```
   Do not change any other line. Save the file.
 
-- [ ] T014 [US1] Add redirect guard to `lib/src/routing/app_router.dart`.
+- [X] T014 [US1] Add redirect guard to `lib/src/routing/app_router.dart`.
   Open the file. Add these imports at the top:
   ```dart
   import 'package:perfum_ahmed_gaper/src/services/service_locator.dart';
@@ -499,7 +499,7 @@ No protected content renders before the auth gate.
   Add `import 'package:flutter/material.dart';` if not already present.
   Save the file.
 
-- [ ] T015 [US1] Update `lib/src/shared/wrappers/state_wrapper.dart` to provide `SessionBloc` from `get_it` instead of constructing it inline.
+- [X] T015 [US1] Update `lib/src/shared/wrappers/state_wrapper.dart` to provide `SessionBloc` from `get_it` instead of constructing it inline.
   Open `lib/src/shared/wrappers/state_wrapper.dart`. Find where `SessionBloc` is provided (likely inside a `BlocProvider` or `MultiBlocProvider`). Replace the construction `SessionBloc(repository: ...)` with `sl<SessionBloc>()` and change the provider type to `BlocProvider.value`:
   ```dart
   BlocProvider<SessionBloc>.value(value: sl<SessionBloc>()),
@@ -510,7 +510,7 @@ No protected content renders before the auth gate.
   ```
   Save the file.
 
-- [ ] T016 [US1] Run `flutter analyze` on all files modified in Phase 3:
+- [X] T016 [US1] Run `flutter analyze` on all files modified in Phase 3:
   ```
   lib/src/config/app_config.dart
   lib/src/services/auth_service.dart
@@ -538,14 +538,14 @@ No screen or cubit code adds the header manually.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Verify the JWT interceptor wired in T008 is correct by reading `lib/src/config/app_config.dart` and confirming:
+- [X] T017 [US2] Verify the JWT interceptor wired in T008 is correct by reading `lib/src/config/app_config.dart` and confirming:
   1. The JWT interceptor is the SECOND interceptor (after logging).
   2. `onRequest` calls `SecureStorageService.instance.read(kJwtTokenKey)` and sets the `Authorization` header when a token is present.
   3. `onError` only acts on `statusCode == 401`.
   4. Both handlers end with `return handler.next(...)`.
   If any of these are wrong, fix them now. If all correct, mark task complete.
 
-- [ ] T018 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` to save the JWT token after a successful login.
+- [X] T018 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` to save the JWT token after a successful login.
   Open the file. In the `login()` method, after the `AppUser` is constructed and before `return right(user)`, add:
   ```dart
   // Save token to secure storage so the interceptor can read it
@@ -561,14 +561,14 @@ No screen or cubit code adds the header manually.
   (`SecureStorageService` import should already be present via the services barrel; if not, add it.)
   Save the file.
 
-- [ ] T019 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` to clear the JWT token on logout.
+- [X] T019 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` to clear the JWT token on logout.
   In the `logout()` method, before calling `_authService.logout()`, add:
   ```dart
   await SecureStorageService.instance.delete(kJwtTokenKey);
   ```
   Save the file.
 
-- [ ] T020 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` — fix the `id` field mapping.
+- [X] T020 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` — fix the `id` field mapping.
   In both `login()` and `signUp()`, change the line:
   ```dart
   id: data['id'].toString(),
@@ -579,7 +579,7 @@ No screen or cubit code adds the header manually.
   ```
   This handles MongoDB's `_id` field name as well as `id`. Save the file.
 
-- [ ] T021 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` — map the `permissions` field from the login response onto `AppUser`.
+- [X] T021 [US2] Update `lib/src/features/auth/data/repositories/auth_repository_impl.dart` — map the `permissions` field from the login response onto `AppUser`.
   In the `login()` and `signUp()` `AppUser(...)` constructors, add:
   ```dart
   permissions: (data['permissions'] as int?) ?? 0,
@@ -595,7 +595,7 @@ No screen or cubit code adds the header manually.
   ```
   Save the file.
 
-- [ ] T022 [US2] Run `flutter analyze lib/src/features/auth/data/repositories/auth_repository_impl.dart` and fix any errors.
+- [X] T022 [US2] Run `flutter analyze lib/src/features/auth/data/repositories/auth_repository_impl.dart` and fix any errors.
   Expected result: zero issues.
 
 **Checkpoint US2**: Log in with valid credentials → open DevTools Network tab → navigate to any route → confirm `Authorization: Bearer <token>` header present on every request. Quickstart Scenario 2 passes.
@@ -613,7 +613,7 @@ Adding a new module's repository requires touching only `service_locator.dart`.
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Update `lib/src/shared/wrappers/session_listener_wrapper.dart` to handle the `unauthenticated` state navigation (defense-in-depth).
+- [X] T023 [US3] Update `lib/src/shared/wrappers/session_listener_wrapper.dart` to handle the `unauthenticated` state navigation (defense-in-depth).
   Open `lib/src/shared/wrappers/session_listener_wrapper.dart`. Replace its `build()` method with:
   ```dart
   @override
@@ -638,7 +638,7 @@ Adding a new module's repository requires touching only `service_locator.dart`.
   ```
   Save the file.
 
-- [ ] T024 [US3] Verify `lib/src/shared/wrappers/state_wrapper.dart` provides BOTH `SessionBloc` and `AuthBloc` from `get_it`.
+- [X] T024 [US3] Verify `lib/src/shared/wrappers/state_wrapper.dart` provides BOTH `SessionBloc` and `AuthBloc` from `get_it`.
   Open the file. Confirm that `AuthBloc` is also provided using `BlocProvider.value`:
   ```dart
   BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
@@ -649,7 +649,7 @@ Adding a new module's repository requires touching only `service_locator.dart`.
   ```
   Save the file.
 
-- [ ] T025 [US3] Run `flutter analyze` on all wrappers and the locator:
+- [X] T025 [US3] Run `flutter analyze` on all wrappers and the locator:
   ```
   lib/src/shared/wrappers/state_wrapper.dart
   lib/src/shared/wrappers/session_listener_wrapper.dart
@@ -657,7 +657,7 @@ Adding a new module's repository requires touching only `service_locator.dart`.
   ```
   Fix ALL errors. Expected result: zero issues.
 
-- [ ] T026 [US3] Run the full app in debug mode (`flutter run -d chrome`) and confirm:
+- [X] T026 [US3] Run the full app in debug mode (`flutter run -d chrome`) and confirm:
   1. Console shows no `LateInitializationError` or `Object/factory not registered` errors.
   2. App starts and shows the `/onboarding` or `/login` screen (depending on stored session).
   3. Navigating to `/login` when unauthenticated works.
@@ -672,25 +672,25 @@ Adding a new module's repository requires touching only `service_locator.dart`.
 **Purpose**: Final analysis pass, remove any remaining raw string paths, confirm all
 constitution quality gates.
 
-- [ ] T027 Run `grep -r "'/login'" lib/src/` (or search in IDE) to find any raw string route literals outside `AppRoutes`. Replace each with the appropriate `AppRoutes.xxx` constant. Expected: zero raw route strings outside `app_routes.dart` and `go_router_refresh_stream.dart`.
+- [X] T027 Run `grep -r "'/login'" lib/src/` (or search in IDE) to find any raw string route literals outside `AppRoutes`. Replace each with the appropriate `AppRoutes.xxx` constant. Expected: zero raw route strings outside `app_routes.dart` and `go_router_refresh_stream.dart`.
 
-- [ ] T028 Run `grep -r "'jwt_token'" lib/src/` to find any raw token key strings outside `service_locator.dart`. Replace each with `kJwtTokenKey`. Expected: zero raw `'jwt_token'` strings outside `service_locator.dart`.
+- [X] T028 Run `grep -r "'jwt_token'" lib/src/` to find any raw token key strings outside `service_locator.dart`. Replace each with `kJwtTokenKey`. Expected: zero raw `'jwt_token'` strings outside `service_locator.dart`.
 
-- [ ] T029 [P] Verify constitution quality gates — check each item manually:
-  - [ ] `lib/src/features/auth/domain/` has zero imports of `package:flutter`, `package:dio`, or `package:json_annotation`
-  - [ ] `AppUser.id` is `String` — not `int`
-  - [ ] `service_locator.dart` registers `AuthRepository` (interface), not `AuthRepositoryImpl` directly
-  - [ ] `app_router.dart` reads `sl<SessionBloc>()` — no `context.read<SessionBloc>()`
-  - [ ] `app_config.dart` interceptor does NOT call `context.go()` — navigation is zero inside the interceptor
+- [X] T029 [P] Verify constitution quality gates — check each item manually:
+  - [X] `lib/src/features/auth/domain/` has zero imports of `package:flutter`, `package:dio`, or `package:json_annotation`
+  - [X] `AppUser.id` is `String` — not `int`
+  - [X] `service_locator.dart` registers `AuthRepository` (interface), not `AuthRepositoryImpl` directly
+  - [X] `app_router.dart` reads `sl<SessionBloc>()` — no `context.read<SessionBloc>()`
+  - [X] `app_config.dart` interceptor does NOT call `context.go()` — navigation is zero inside the interceptor
   Fix any violations found.
 
-- [ ] T030 Run `flutter analyze` on the entire `lib/` directory:
+- [X] T030 Run `flutter analyze` on the entire `lib/` directory:
   ```
   flutter analyze lib/
   ```
   Fix ALL errors and warnings. The project MUST pass analysis cleanly before Phase 0 is considered complete.
 
-- [ ] T031 [P] Update `PLAN.md` (project root) — change the Auth module status in Section 7 from `Not started` to `Phase 0 ✅ Done`:
+- [X] T031 [P] Update `PLAN.md` (project root) — change the Auth module status in Section 7 from `Not started` to `Phase 0 ✅ Done`:
   ```markdown
   | Auth | Phase 0 ✅ Done — infrastructure wired |
   ```

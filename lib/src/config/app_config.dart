@@ -1,6 +1,7 @@
 import '../imports/core_imports.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:perfum_ahmed_gaper/src/services/service_locator.dart';
 
 class AppConfig {
   AppConfig._();
@@ -33,6 +34,31 @@ class AppConfig {
         },
         onError: (DioException e, handler) {
           AppLogger.error('❌ [DIO] ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
+          return handler.next(e);
+        },
+      ),
+    );
+
+    // JWT interceptor — LAST interceptor in the chain
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final tokenResult = await SecureStorageService.instance.read(kJwtTokenKey);
+          tokenResult.fold(
+            (_) => null,
+            (token) {
+              if (token != null && token.isNotEmpty) {
+                options.headers['Authorization'] = 'Bearer $token';
+              }
+            },
+          );
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) async {
+          if (e.response?.statusCode == 401) {
+            await SecureStorageService.instance.deleteAll();
+            AuthService.instance.signalUnauthenticated();
+          }
           return handler.next(e);
         },
       ),

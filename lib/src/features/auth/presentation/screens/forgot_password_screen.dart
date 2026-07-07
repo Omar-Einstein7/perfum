@@ -1,7 +1,6 @@
 import 'package:perfum_ahmed_gaper/src/imports/core_imports.dart';
 import 'package:perfum_ahmed_gaper/src/imports/packages_imports.dart';
 
-
 import 'package:perfum_ahmed_gaper/src/features/auth/presentation/providers/auth_bloc.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
@@ -24,78 +23,90 @@ class ForgotPasswordScreen extends StatelessWidget {
 
       context.read<AuthBloc>().add(
         ForgotPasswordRequested(
-          context: context,
           email: emailController.text,
         ),
       );
     }
 
-    return Scaffold(
-      appBar: const AppTopBar(title: ''),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: AppSpacing.xl.h),
-                Text(
-                  'auth.forgot_password_title'.tr(),
-                  style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: AppSpacing.sm.h),
-                Text(
-                  'auth.forgot_password_subtitle'.tr(),
-                  textAlign: TextAlign.center,
-                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                ),
-                SizedBox(height: AppSpacing.xxxl.h),
-                // Form Card
-                Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      AppTextField(
-                        controller: emailController,
-                        enabled: !isLoading,
-                        keyboardType: TextInputType.emailAddress,
-                        label: 'auth.email'.tr(),
-                        prefixIcon: const Icon(IconsaxPlusBold.sms),
-                        validator: (v) {
-                          if (AppUtils.isBlank(v)) {
-                            return 'auth.email_required'.tr();
-                          }
-                          if (!AppUtils.isValidEmail(v!)) {
-                            return 'auth.email_invalid'.tr();
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: AppSpacing.lg.h),
-                      AppButton(
-                        label: 'Send Reset Link',
-                        isLoading: isLoading,
-                        onPressed: isLoading ? null : handleForgotPassword,
-                        width: ButtonSize.large,
-                        isFullWidth: false,
-                      ),
-                    ],
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (previous, current) =>
+          previous.passwordResetSent != current.passwordResetSent ||
+          previous.errorMessage != current.errorMessage,
+      listener: (context, state) {
+        if (state.passwordResetSent == true) {
+          showToast(context, message: 'Password reset link sent successfully', status: 'success');
+          context.go(AppRoutes.login);
+        }
+        if (state.errorMessage != null) {
+          showToast(context, message: state.errorMessage!, status: 'error');
+        }
+      },
+      child: Scaffold(
+        appBar: const AppTopBar(title: ''),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: AppSpacing.xl.h),
+                  Text(
+                    'auth.forgot_password_title'.tr(),
+                    style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                ),
-                SizedBox(height: AppSpacing.xxxl.h),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'auth.back_to_login'.tr(),
-                    style: tt.labelLarge?.copyWith(
-                      color: cs.primary,
-                      fontWeight: FontWeight.bold,
+                  SizedBox(height: AppSpacing.sm.h),
+                  Text(
+                    'auth.forgot_password_subtitle'.tr(),
+                    textAlign: TextAlign.center,
+                    style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                  SizedBox(height: AppSpacing.xxxl.h),
+                  Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        AppTextField(
+                          controller: emailController,
+                          enabled: !isLoading,
+                          keyboardType: TextInputType.emailAddress,
+                          label: 'auth.email'.tr(),
+                          prefixIcon: const Icon(IconsaxPlusBold.sms),
+                          validator: (v) {
+                            if (AppUtils.isBlank(v)) {
+                              return 'auth.email_required'.tr();
+                            }
+                            if (!AppUtils.isValidEmail(v!)) {
+                              return 'auth.email_invalid'.tr();
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: AppSpacing.lg.h),
+                        AppButton(
+                          label: 'Send Reset Link',
+                          isLoading: isLoading,
+                          onPressed: isLoading ? null : handleForgotPassword,
+                          width: ButtonSize.large,
+                          isFullWidth: false,
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                SizedBox(height: AppSpacing.xl.h),
-              ],
+                  SizedBox(height: AppSpacing.xxxl.h),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'auth.back_to_login'.tr(),
+                      style: tt.labelLarge?.copyWith(
+                        color: cs.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xl.h),
+                ],
+              ),
             ),
           ),
         ),
