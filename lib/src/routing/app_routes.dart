@@ -15,6 +15,9 @@ abstract final class AppRoutes {
 
   // --- Lookups (canEditMasters = 32) ---
   static const String units          = '/units';
+  static const String unitNew        = '/units/new';
+  static const String unitDetail     = '/units/:id';
+  static const String unitEdit       = '/units/:id/edit';
   static const String categories     = '/categories';
 
   // --- Inventory (canEditMasters = 32) ---
