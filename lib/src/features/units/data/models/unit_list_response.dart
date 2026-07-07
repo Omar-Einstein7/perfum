@@ -1,26 +1,43 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../domain/entities/paginated_response.dart';
+import '../../domain/entities/unit.dart';
 import 'unit_model.dart';
 
-class UnitListResponse {
-  final List<UnitModel> units;
-  final int total;
-  final int page;
-  final int pages;
+part 'unit_list_response.freezed.dart';
 
-  const UnitListResponse({
-    required this.units,
-    required this.total,
-    required this.page,
-    required this.pages,
-  });
+@Freezed(fromJson: false, toJson: false)
+abstract class UnitListResponse with _$UnitListResponse {
+  const factory UnitListResponse({
+    required List<UnitModel> data,
+    required int page,
+    required int limit,
+    required int total,
+    required int pages,
+  }) = _UnitListResponse;
 
   factory UnitListResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as List<dynamic>;
-    final meta = json['meta'] as Map<String, dynamic>;
+    final pagination = json['pagination'] as Map<String, dynamic>? ?? {};
+    final dataList = (json['data'] as List<dynamic>?)
+            ?.cast<Map<String, dynamic>>()
+            .map((e) => UnitModel.fromJson(e))
+            .toList() ??
+        [];
     return UnitListResponse(
-      units: data.map((e) => UnitModel.fromJson(e as Map<String, dynamic>)).toList(),
-      total: meta['total'] as int,
-      page: meta['page'] as int,
-      pages: meta['pages'] as int,
+      data: dataList,
+      page: pagination['page'] as int? ?? 1,
+      limit: pagination['limit'] as int? ?? 20,
+      total: pagination['total'] as int? ?? 0,
+      pages: pagination['pages'] as int? ?? 1,
     );
   }
+}
+
+extension UnitListResponseX on UnitListResponse {
+  PaginatedResponse<Unit> toEntity() => PaginatedResponse<Unit>(
+        data: data.map((e) => e.toEntity()).toList(),
+        page: page,
+        limit: limit,
+        total: total,
+        pages: pages,
+      );
 }
