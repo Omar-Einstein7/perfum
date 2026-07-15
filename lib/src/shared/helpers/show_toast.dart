@@ -4,7 +4,7 @@ void showToast(
   BuildContext context, {
   required String message,
   String? status = 'success',
-  IconData? icon,
+  dynamic icon,
   Duration? duration,
   bool? autoDismiss,
 }) {
@@ -49,8 +49,8 @@ void showToast(
     builder: (context) => ToastCard(
       color: backgroundColor,
       shadowColor: colorScheme.shadow.withValues(alpha: 0.05),
-      leading: Icon(
-        icon ??
+      leading: AppIcon(
+        icon: icon ??
             (toastStatus == 'success'
                 ? IconsaxPlusBold.tick_circle
                 : toastStatus == 'error'
@@ -74,7 +74,7 @@ void showToast(
 void showGlobalToast({
   required String message,
   String? status = 'success',
-  IconData? icon,
+  dynamic icon,
   Duration? duration,
   bool? autoDismiss,
 }) {

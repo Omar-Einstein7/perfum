@@ -4,7 +4,7 @@ import 'package:perfum_ahmed_gaper/src/imports/packages_imports.dart';
 import 'package:perfum_ahmed_gaper/src/features/auth/presentation/providers/session_bloc.dart';
 
 
-class HomePage extends StatelessWidget {
+class HomePage extends HookWidget {
   const HomePage({super.key});
 
   @override
@@ -28,8 +28,8 @@ class HomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(
-                IconsaxPlusLinear.home,
+              AppIcon(
+                icon: IconsaxPlusLinear.home,
                 size: 60.sp,
                 color: colorScheme.primary,
               ),
@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
               ),
                             SizedBox(height: AppSpacing.md.h),
               Text(
-                user?.email != null && user?.name != null ? user!.email : ('home.home_subtitle'.tr()),
+                user != null && user.name != null ? user.email : ('home.home_subtitle'.tr()),
                 textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,

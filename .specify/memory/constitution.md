@@ -1,242 +1,247 @@
 <!--
-SYNC IMPACT REPORT
-==================
-Version change: [UNVERSIONED] → 1.0.0
-Modified principles: N/A (initial ratification)
-Added sections:
-  - Core Principles (I–VII)
-  - Technology Stack & Module Registry
-  - Development Workflow
-  - Governance
-Templates reviewed:
-  - .specify/templates/plan-template.md ✅ (compatible — no ERP-specific references needed)
-  - .specify/templates/spec-template.md ✅ (compatible — user stories/FR/SC format applies unchanged)
-  - .specify/templates/tasks-template.md ✅ (compatible — phase structure aligns with build order)
-  - .specify/templates/constitution-template.md ✅ (source template, no update required)
-Follow-up TODOs:
-  - TODO(RATIFICATION_DATE): Treat 2026-07-04 as initial ratification date (today).
-  - Backend Node.js/Express is a separate project not yet scaffolded; backend architecture
-    constitution should be written when that repo is created.
+  Sync Impact Report
+  ==================
+  Version change: 1.0.0 → 1.1.0
+  Modified principles: None (titles unchanged)
+  Added sections: None
+  Expanded sections:
+    - Architecture & Stack: materially expanded with project-mapped directory
+      tree, actual import system, feature layout, screen pattern, theme setup,
+      app entry-point flow, and development conventions drawn from real code.
+    - Development Workflow & Quality Gates: added conventions observed in code
+      (HookWidget→_View pattern, providers directory naming, no usercases yet,
+      service→repository→bloc chain).
+  Removed sections: None
+  Templates requiring updates:
+    - .specify/templates/plan-template.md ✅ still compatible
+    - .specify/templates/spec-template.md ✅ no changes needed
+    - .specify/templates/tasks-template.md ✅ no changes needed
+  Follow-up TODOs: None.
 -->
 
-# Inventory/POS ERP Constitution
+# Ahmed Gaber Perfume Constitution
 
 ## Core Principles
 
-### I. Clean Architecture (NON-NEGOTIABLE)
+### I. Server-Authoritative Security
 
-The Flutter frontend MUST follow Clean Architecture with three strict layers:
+All financial totals (before/after discount/final) MUST be computed
+server-side only. No code path SHALL accept a pre-computed total from
+the client. Every sensitive endpoint MUST check a real server-side
+permission (middleware) — hiding a button in the UI is never an
+acceptable substitute. The `employee_id` and `branch_id` values MUST
+always come from the JWT/session; they SHALL NOT be manually entered in
+any form.
 
-- **Domain** — pure Dart only. Entities, abstract repository interfaces, and use-case
-  classes live here. This layer MUST NOT import Flutter, Dio, json_serializable,
-  or any infrastructure package.
-- **Data** — implements domain repository interfaces. Contains models (with `fromJson`/
-  `toJson` via `freezed` + `json_serializable`), remote data sources (Dio), and local
-  data sources (SharedPreferences / FlutterSecureStorage).
-- **Presentation** — Flutter widgets + `flutter_bloc` (Cubit or Bloc). MUST NOT
-  call Dio or access storage directly; all side effects flow through injected
-  use-cases or repositories.
+**Rationale**: Trusting client-submitted totals or relying on UI gating
+creates exploitable gaps. Session-authoritative identity prevents
+impersonation and data-access violations.
 
-Each feature (`lib/src/features/<feature>/`) MUST contain exactly these three
-subdirectories. Skipping a layer or merging layers is a constitution violation.
+### II. Branch Autonomy
 
-**Rationale**: Enforces testability, replaceability of infrastructure, and
-long-term maintainability across 15 modules built over an extended timeline.
+Every branch MUST be 100% independent, financially and in stock. No
+table or logic for inter-branch stock transfer exists
+(`branch_transfers` is permanently removed, even as a future idea,
+without reopening the discussion).
 
-### II. MongoDB ObjectId Strings as Identifiers
+**Rationale**: Branch independence simplifies accounting, eliminates
+reconciliation complexity, and ensures each branch's P&L is a true
+reflection of its own operations.
 
-All entity identifiers MUST be represented as Dart `String` (MongoDB ObjectId
-hex strings). Integer primary keys are NEVER used anywhere in the system —
-not in entities, models, API contracts, or UI state.
+### III. Offline-First
 
-**Rationale**: The backend uses MongoDB. Using strings end-to-end eliminates
-impedance mismatch and prevents accidental int/string confusion bugs.
+Every operation — without exception — MUST work offline-first. Every
+write MUST be saved locally first (via `sync_queue`) and uploaded later.
+A `client_generated_uuid` per operation MUST serve as the idempotency
+key to prevent duplicate processing on sync.
 
-### III. Derived-Only Financial State
+**Rationale**: POS and inventory operations cannot depend on continuous
+connectivity. Offline-first guarantees availability and data integrity
+regardless of network state.
 
-Stock quantities, customer balances, and supplier balances MUST NOT be stored
-as persistent fields on any entity. They are ALWAYS computed at query time from
-the canonical transaction records (invoices, vouchers, transfers).
+### IV. Feature Separation (Retail/Wholesale)
 
-- The `Stock` and `Credit Ledger` modules are READ-ONLY aggregation views.
-- No write path may update a "balance" or "quantity" field directly.
+Retail and Wholesale MUST be fully separate features in code — different
+Bloc, different route. Merging them via a toggle/flag is NOT allowed.
 
-**Rationale**: Derived state is the single source of truth pattern from the
-original Access database. Storing it redundantly creates consistency hazards
-in a multi-branch, multi-user environment.
+**Rationale**: Distinct pricing, discount, inventory, and reporting
+rules for each channel make a unified code path fragile and
+unmaintainable. Separate Blocs and routes keep each flow testable and
+evolvable independently.
 
-### IV. Atomic Money-Affecting Writes
+### V. Data & UX Standards
 
-Any operation that changes financial position — invoice submission, voucher
-submission, or stock transfer — MUST be executed as an atomic backend
-transaction. Partial writes that leave the database in an inconsistent state
-are unacceptable.
+All quantities MUST be numeric (double/decimal), not integer.
+User-facing messages MUST be in clear Arabic, not raw technical English.
 
-- Backend (Node.js + Mongoose) MUST use MongoDB sessions/transactions for
-  these operations.
-- Frontend MUST treat these as single, non-retryable operations: on failure,
-  roll back the UI state and surface a clear error; never silently retry a
-  financial write.
+**Rationale**: Fractional quantities (e.g., 0.5 kg, 1.75 L) are
+required for perfumery inventory. Arabic messages ensure the primary
+user base can operate the system without ambiguity.
 
-**Rationale**: Financial integrity is the primary non-functional requirement
-of an ERP. Partial writes cause un-auditable ledger discrepancies.
+## Architecture & Stack
 
-### V. Permission-Gated Routes
+The project uses Clean Architecture under `lib/src/`:
 
-Every screen and API route MUST map to exactly one of the 7 permission flags
-defined in the `Auth & Users` module. No screen is accessible without a
-verified JWT that carries the required permission bit.
-
-- The router (`go_router`) MUST implement a redirect guard that checks
-  `SessionBloc` state before rendering any protected route.
-- The backend MUST validate the JWT and permission flag on every protected
-  endpoint; client-side permission checks are defense-in-depth only, never
-  the sole gate.
-
-**Rationale**: Multi-user, multi-branch ERP systems require role-based access
-at both UI and API layers to protect sensitive financial data.
-
-### VI. Build Order Discipline
-
-Modules MUST be built in the prescribed dependency order:
-
-```
-Auth → Units → Categories → Materials → Suppliers → Customers → Branches
-→ Purchase Invoices → Sales Invoices → Payment Vouchers → Receipt Vouchers
-→ Transfers → Stock → Credit Ledger → Reports & Dashboard
-```
-
-A later module MUST NOT be started until all modules it depends on are
-functionally complete (entities, repository, at least one happy-path screen).
-Skipping ahead to create stubs for convenience is permitted only in the shared
-`domain/entities` layer; no skip-ahead is permitted in data or presentation.
-
-**Rationale**: Lookup tables (units, categories) are referenced by every
-invoice line. Building out of order creates placeholder data and coupling debt.
-
-### VII. State Management via flutter_bloc Only
-
-All application state MUST be managed through `flutter_bloc` (Cubit or Bloc).
-Direct `setState`, `ChangeNotifier`, `Provider`, `Riverpod`, or `ValueNotifier`
-(outside of strictly local, ephemeral widget state) are not permitted.
-
-- Cubits are preferred for simple request/response flows (CRUD, form submission).
-- Blocs (with explicit Events) are preferred for flows with multiple input
-  triggers (e.g., real-time search, pagination, multi-step wizards).
-- `get_it` is the sole dependency-injection mechanism; no context-based DI
-  (e.g., `Provider.of`, `context.read` for injecting services) is permitted
-  outside of Bloc/Cubit constructors.
-
-**Rationale**: A single state management approach across 15 modules maintains
-consistency, makes BLoC states machine-readable, and simplifies onboarding.
-
-## Technology Stack & Module Registry
-
-### Approved Stack
-
-| Layer | Package / Tool | Notes |
-|---|---|---|
-| Language | Dart (SDK ^3.11.5) | |
-| UI framework | Flutter (web target) | |
-| State management | flutter_bloc ^9.1.1 | Cubit default, Bloc for complex flows |
-| DI | get_it ^9.2.1 | Singleton registration in `services/` |
-| Routing | go_router ^17.1.0 | Declarative; redirect guards for auth |
-| HTTP | dio ^5.9.2 | Wrapped in `DioService`; base URL from `.env` |
-| Serialization | freezed ^3.2.5 + json_serializable ^6.14.0 | All models use `@freezed` |
-| Functional | fpdart ^1.2.0 | `Either<Failure, T>` as repository return type |
-| Equality | equatable ^2.0.7 | Domain entities |
-| Secure storage | flutter_secure_storage ^10.0.0 | JWT token storage |
-| Local prefs | shared_preferences ^2.5.4 | Non-sensitive settings |
-| Localization | easy_localization ^3.0.8 | AR/EN minimum |
-| Responsive | flutter_screenutil ^5.9.3 | Web + mobile breakpoints |
-| Logging | logger ^2.6.2 | Dev builds only; strip in release |
-| Auth | JWT + bcrypt (backend) | 7 permission flags per user |
-| Backend | Node.js + Express + Mongoose | Separate repository |
-| Database | MongoDB | ObjectId strings only |
-
-No package outside this table may be added without a written rationale and
-constitution amendment.
-
-### Module Registry
-
-| # | Module | Build Status |
-|---|---|---|
-| 1 | Auth & Users | Not started |
-| 2 | Units of Measure | Not started |
-| 3 | Categories | Not started |
-| 4 | Materials (Items) | Not started |
-| 5 | Suppliers | Not started |
-| 6 | Customers | Not started |
-| 7 | Branches | Not started |
-| 8 | Purchase Invoices | Not started |
-| 9 | Sales Invoices | Not started |
-| 10 | Payment Vouchers | Not started |
-| 11 | Receipt Vouchers | Not started |
-| 12 | Transfers | Not started |
-| 13 | Stock (read-only) | Not started |
-| 14 | Credit Ledger (read-only) | Not started |
-| 15 | Reports & Dashboard | Not started |
-
-## Development Workflow
-
-### Per-Module Sequence
-
-For every module in the build order:
-
-1. **Domain first** — define the entity, abstract repository interface, and
-   use-case classes. No Flutter imports.
-2. **Data layer** — implement the model (`@freezed`), remote data source
-   (Dio), and repository implementation.
-3. **Presentation layer** — implement the Cubit/Bloc, screens, and widgets.
-4. **Route registration** — add the route to `app_router.dart` with the
-   correct permission guard.
-5. **Manual smoke test** — verify the module end-to-end before moving on.
-
-### Directory Convention
-
-```
-lib/src/features/<module_name>/
-├── data/
-│   ├── models/          # @freezed models with fromJson/toJson
-│   ├── datasources/     # remote_datasource.dart, local_datasource.dart
-│   └── repositories/    # repository_impl.dart
-├── domain/
-│   ├── entities/        # pure Dart, Equatable
-│   ├── repositories/    # abstract interface
-│   └── usecases/        # single-responsibility use-case classes
-└── presentation/
-    ├── providers/        # cubit.dart or bloc.dart + state.dart
-    ├── screens/          # one file per screen
-    └── widgets/          # module-specific reusable widgets
+```text
+lib/
+├── main.dart                           # Entry: splash → i18n → dotenv → dio → hive
+└── src/
+    ├── app.dart                        # CupertinoApp.router wrapping Material Theme
+    ├── flavours.dart
+    ├── config/
+    │   └── app_config.dart             # Dio singleton init, baseUrl from .env
+    ├── extensions/
+    │   ├── context_extension.dart      # Theme/size/routing overlays shortcuts
+    │   ├── string_extension.dart
+    │   ├── num_extension.dart
+    │   ├── collection_extension.dart
+    │   ├── date_time_extension.dart
+    │   └── widget_extension.dart
+    ├── features/
+    │   └── <feature>/
+    │       ├── data/
+    │       │   ├── models/             # fromJson/toJson (data shape)
+    │       │   └── repositories/       # Impl -> calls services
+    │       ├── domain/
+    │       │   ├── entities/           # Pure Dart, no fromJson
+    │       │   └── repositories/       # Interface contract
+    │       └── presentation/
+    │           ├── providers/          # BLoC files live here
+    │           └── screens/            # HookWidget → _View pattern
+    ├── imports/
+    │   ├── imports.dart                # Re-exports both below
+    │   ├── core_imports.dart           # SDK + project core (config, routing, services, shared)
+    │   └── packages_imports.dart       # Third-party (fpdart, dio, bloc, hive, etc.)
+    ├── routing/
+    │   ├── app_router.dart             # GoRouter with all routes
+    │   ├── app_routes.dart             # Path constants (AppRoutes.login, etc.)
+    │   └── global_navigator.dart       # rootNavigatorKey, rootContext
+    ├── services/
+    │   ├── auth_service.dart
+    │   ├── dio_service.dart
+    │   ├── hive_service.dart
+    │   ├── storage_service.dart
+    │   ├── secure_storage_service.dart
+    │   ├── internet_connection_service.dart
+    │   ├── location_service.dart
+    │   ├── media_service.dart
+    │   ├── path_service.dart
+    │   ├── permission_service.dart
+    │   ├── copy_service.dart
+    │   ├── device_info_service.dart
+    │   ├── url_launcher_service.dart
+    │   └── version_update_service.dart
+    ├── shared/
+    │   ├── app_assets.dart
+    │   ├── enums/                      # AppStatus, ButtonSize, SnackBarType
+    │   ├── helpers/                    # showToast, showAppDialog, showAppSheet
+    │   ├── hooks/                      # useCopy, useLaunchUrl, usePermission, useTimer
+    │   ├── widgets/                    # AppButton, AppTextField, AppCard, AppTopBar, etc.
+    │   └── wrappers/                   # LocalizationWrapper, StateWrapper, ScreenUtilWrapper,
+    │                                   # SkeletonWrapper, SessionListenerWrapper
+    ├── theme/
+    │   ├── theme.dart                  # buildLightTheme/buildDarkTheme/buildCupertinoTheme
+    │   ├── color_schemes.dart          # AppColorsExtension + AppPalettes (light/dark)
+    │   ├── text_theme.dart
+    │   ├── theme_constants.dart        # Barrel for AppSpacing, AppBorders, etc.
+    │   ├── app_spacing.dart
+    │   ├── app_borders.dart
+    │   ├── app_shadows.dart
+    │   ├── app_durations.dart
+    │   └── app_curves.dart
+    └── utils/
+        ├── app_utils.dart
+        ├── debouncer.dart
+        ├── error_handler.dart         # AppErrorHandler
+        ├── failure.dart               # Failure, ServerFailure, CacheFailure, NetworkFailure
+        ├── input_formatters.dart
+        ├── logger.dart                # AppLogger
+        ├── platform_info.dart
+        ├── task_runner.dart           # runTask() -> FutureEither<T>
+        └── typedefs.dart             # FutureEither<T>, FutureEitherVoid, StreamEither<T>
 ```
 
-Shared widgets belong in `lib/src/shared/widgets/`.
-Shared services belong in `lib/src/services/`.
+### Technology stack
 
-### Quality Gates (per module)
+- **State management**: flutter_bloc (BLoC files in `presentation/providers/`)
+- **Navigation**: go_router via `CupertinoApp.router` with centralized route table
+- **Networking**: Dio (shared singleton from AppConfig)
+- **Local storage**: Hive CE, SharedPreferences, flutter_secure_storage
+- **Localization**: easy_localization (en, ar)
+- **Screen adaptation**: flutter_screenutil
+- **Utilities**: flutter_hooks, flutter_dotenv, fpdart (Either), equatable, skeletonizer,
+  cached_network_image, flutter_animate, smooth_page_indicator, logger
 
-- [ ] Domain layer has zero Flutter/Dio/json imports
-- [ ] Repository impl returns `Either<Failure, T>` (fpdart)
-- [ ] All screens guarded by permission redirect in `app_router.dart`
-- [ ] No financial write operates outside an atomic backend transaction
-- [ ] No entity uses an integer as its primary identifier
+### Architecture rules
+
+- `domain/` is pure Dart — no Flutter imports, no imports from `data/`.
+- `data/` implements repository contracts from `domain/` — never the reverse.
+- Entities have no `fromJson`/`toJson` — models in `data/models/` handle
+  serialization and map to entities.
+- `presentation/providers/` holds BLoC files (Bloc/Event/State in one file).
+- Screen pattern: a `HookWidget` reads state and controllers, then delegates
+  rendering to a private `StatelessWidget _View`.
+- Services are singletons with `.instance`, returning `FutureEither<T>` via
+  `runTask()`. No `BuildContext` is passed into services — use `rootContext`
+  from `global_navigator.dart` when UI feedback is needed.
+- No business logic in widget `build()` methods.
+- No direct backend or network calls from presentation widgets — always go
+  through service → repository → Bloc chain.
+- Import via `package:perfume_ahmed_gaber/src/imports/imports.dart` barrel
+  (or `core_imports.dart` / `packages_imports.dart` individually).
+
+### App entry point flow
+
+```
+main()
+├── WidgetsFlutterBinding.ensureInitialized()
+├── FlutterNativeSplash.preserve()
+├── EasyLocalization.ensureInitialized()
+├── dotenv.load()
+├── AppConfig.init()        → Dio singleton
+├── HiveService.instance.init()
+└── runApp(
+      LocalizationWrapper →
+        StateWrapper →
+          App (ScreenUtilWrapper →
+            CupertinoApp.router →
+              SkeletonWrapper → SessionListenerWrapper →
+                Theme(buildLightTheme/buildDarkTheme)))
+```
+
+## Development Workflow & Quality Gates
+
+- Events and states MUST be immutable — prefer `const` constructors.
+- BLoC event handlers delegate to repository use cases or services — no heavy
+  logic inside handlers.
+- One BLoC per feature flow — do not share Blocs across unrelated features.
+- All routes defined in `lib/src/routing/app_router.dart` with path constants
+  in `app_routes.dart` — no hard-coded path strings in widgets.
+- Redirects and guards belong in the router configuration, not inside screens.
+- Logging via `AppLogger` (info/success/warning/error); user feedback via
+  `showGlobalToast()` or `showAppDialog()`.
+- All transport errors mapped to `Failure` variants via `runTask()` —
+  `DioException` never leaked to UI.
+- Every feature follows: `domain/entities/` → `domain/repositories/` (contract)
+  → `data/models/` → `data/repositories/` (impl) → `presentation/providers/`
+  (Bloc) → `presentation/screens/` → route registration in `app_router.dart`.
+- Verification: `flutter pub get` → `flutter analyze` → `flutter test`.
 
 ## Governance
 
-This constitution supersedes all other practices, conventions, and preferences
-for this project. Any deviation requires:
+This Constitution supersedes all other practices. Amendments require:
 
-1. A written rationale added to a PR or session note.
-2. An amendment to this document with version bump.
-3. A migration note if existing code violates the new rule.
+1. A documented proposal describing the change and its rationale.
+2. Approval from the project maintainer(s).
+3. A migration plan for any code or processes affected.
+4. Version bump per semantic versioning rules:
+   - **MAJOR**: Backward-incompatible governance/principle removals or
+     redefinitions.
+   - **MINOR**: New principle/section added or materially expanded
+     guidance.
+   - **PATCH**: Clarifications, wording, typo fixes, non-semantic
+     refinements.
+5. All PRs and reviews MUST verify compliance with this Constitution.
+   Complexity MUST be justified when it conflicts with any principle.
 
-**Amendment process**:
-- PATCH bump: wording clarifications, module status updates, adding an
-  approved package to the stack table.
-- MINOR bump: adding a new principle or materially expanding guidance.
-- MAJOR bump: removing or fundamentally redefining an existing principle.
-
-All sessions working on this project MUST reference `PLAN.md` for module
-sequence and this constitution for coding rules.
-
-**Version**: 1.0.0 | **Ratified**: 2026-07-04 | **Last Amended**: 2026-07-04
+**Version**: 1.1.0 | **Ratified**: 2026-07-15 | **Last Amended**: 2026-07-15

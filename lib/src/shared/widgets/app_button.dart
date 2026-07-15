@@ -46,26 +46,26 @@ class AppButton extends StatelessWidget {
     final appColors = context.theme.extension<AppColorsExtension>()!;
     final isDisabled = onPressed == null || isLoading;
 
-    final buttonHeight = switch (height) {
+    final double buttonHeight = switch (height) {
       ButtonSize.small  => 36.h,
       ButtonSize.medium => 48.h,
       ButtonSize.large  => 56.h,
     };
 
-    final buttonWidth = switch (width) {
+    final double? buttonWidth = switch (width) {
       ButtonSize.small  => 100.w,
       ButtonSize.medium => 150.w,
       ButtonSize.large  => 200.w,
       null              => null,
     };
 
-    final horizontalPadding = switch (height) {
+    final double horizontalPadding = switch (height) {
       ButtonSize.small  => 12.w,
       ButtonSize.medium => 20.w,
       ButtonSize.large  => 28.w,
     };
 
-    final fontSize = switch (height) {
+    final double fontSize = switch (height) {
       ButtonSize.small  => 12.sp,
       ButtonSize.medium => 14.sp,
       ButtonSize.large  => 16.sp,
@@ -86,8 +86,8 @@ class AppButton extends StatelessWidget {
       child: isLoading
           ? SizedBox(
               key: const ValueKey('loader'),
-              width: 20,
-              height: 20,
+              width: 20.w,
+              height: 20.h,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: fg,
@@ -99,7 +99,7 @@ class AppButton extends StatelessWidget {
               children: [
                 if (prefixIcon != null) ...[
                   prefixIcon!,
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                 ],
                 Text(
                   label,
@@ -110,7 +110,7 @@ class AppButton extends StatelessWidget {
                   ),
                 ),
                 if (suffixIcon != null) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   suffixIcon!,
                 ],
               ],

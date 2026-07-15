@@ -21,11 +21,11 @@ class AuthService {
     required String password,
   }) async {
     return runTask(() async {
-      final response = await _dio.post('/auth/login', data: {
+      final response = await _dio.post<Map<String, dynamic>>('/auth/login', data: {
         'email': email,
         'password': password,
       });
-      final data = response.data as Map<String, dynamic>;
+      final data = response.data!;
       _authStateController.add(data);
       return data;
     }, requiresNetwork: true);
@@ -37,12 +37,12 @@ class AuthService {
     required String password,
   }) async {
     return runTask(() async {
-      final response = await _dio.post('/auth/signup', data: {
+      final response = await _dio.post<Map<String, dynamic>>('/auth/signup', data: {
         'name': name,
         'email': email,
         'password': password,
       });
-      final data = response.data as Map<String, dynamic>;
+      final data = response.data!;
       _authStateController.add(data);
       return data;
     }, requiresNetwork: true);
@@ -50,33 +50,22 @@ class AuthService {
 
   FutureEither<void> forgotPassword({required String email}) async {
     return runTask(() async {
-      await _dio.post('/auth/forgot-password', data: {'email': email});
+      await _dio.post<void>('/auth/forgot-password', data: {'email': email});
     }, requiresNetwork: true);
   }
 
   FutureEither<void> logout() async {
     return runTask(() async {
-      await _dio.post('/auth/logout');
+      await _dio.post<void>('/auth/logout');
       _authStateController.add(null);
     }, requiresNetwork: true);
   }
 
   FutureEither<Map<String, dynamic>?> getCurrentUser() async {
     return runTask(() async {
-      final response = await _dio.get('/auth/me');
-      return response.data as Map<String, dynamic>;
+      final response = await _dio.get<Map<String, dynamic>>('/auth/me');
+      return response.data;
     });
-  }
-
-  /// Called by the repository after a successful DataSource login/signup.
-  void updateAuthState(Map<String, dynamic>? data) {
-    _authStateController.add(data);
-  }
-
-  /// Called by the JWT interceptor when a 401 is received.
-  /// Emits null to the auth state stream, triggering SessionBloc to go unauthenticated.
-  void signalUnauthenticated() {
-    _authStateController.add(null);
   }
 
   void dispose() {

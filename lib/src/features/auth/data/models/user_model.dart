@@ -1,28 +1,23 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:perfum_ahmed_gaper/src/features/auth/domain/entities/user.dart';
+import 'package:equatable/equatable.dart';
 
-part 'user_model.freezed.dart';
-part 'user_model.g.dart';
+class AppUser extends Equatable {
+  final String id;
+  final String email;
+  final String? name;
+  final String? photoUrl;
 
-@freezed
-abstract class UserModel with _$UserModel {
-  const factory UserModel({
-    required String id,
-    required String email,
-    String? name,
-    String? photoUrl,
-    @Default(0) int permissions,
-  }) = _UserModel;
+  const AppUser({
+    required this.id,
+    required this.email,
+    this.name,
+    this.photoUrl,
+  });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
-}
+  factory AppUser.empty() => const AppUser(id: '', email: '');
 
-extension UserModelX on UserModel {
-  AppUser toEntity() => AppUser(
-        id: id,
-        email: email,
-        name: name,
-        photoUrl: photoUrl,
-        permissions: permissions,
-      );
+  bool get isEmpty => id.isEmpty;
+  bool get isNotEmpty => id.isNotEmpty;
+
+  @override
+  List<Object?> get props => [id, email, name, photoUrl];
 }

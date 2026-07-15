@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:perfum_ahmed_gaper/src/imports/packages_imports.dart';
+import 'package:perfum_ahmed_gaper/src/imports/imports.dart';
 import 'package:perfum_ahmed_gaper/src/features/auth/domain/entities/user.dart';
 import 'package:perfum_ahmed_gaper/src/features/auth/domain/repositories/auth_repository.dart';
-import 'package:perfum_ahmed_gaper/src/features/auth/domain/usecases/check_session_usecase.dart';
-import 'package:perfum_ahmed_gaper/src/features/auth/domain/usecases/logout_usecase.dart';
 
 /// Session events
 abstract class SessionEvent extends Equatable {
@@ -48,18 +46,11 @@ class SessionState extends Equatable {
 }
 
 class SessionBloc extends Bloc<SessionEvent, SessionState> {
-  final CheckSessionUseCase _checkSessionUseCase;
-  final LogoutUseCase _logoutUseCase;
   final AuthRepository _repository;
   StreamSubscription<AppUser?>? _authSub;
 
-  SessionBloc({
-    required CheckSessionUseCase checkSessionUseCase,
-    required LogoutUseCase logoutUseCase,
-    required AuthRepository repository,
-  })  : _checkSessionUseCase = checkSessionUseCase,
-        _logoutUseCase = logoutUseCase,
-        _repository = repository,
+  SessionBloc({required AuthRepository repository})
+      : _repository = repository,
         super(const SessionState.unknown()) {
     on<SessionCheckRequested>(_onCheckRequested);
     on<SessionUserChanged>(_onUserChanged);
@@ -73,7 +64,7 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     SessionCheckRequested event,
     Emitter<SessionState> emit,
   ) async {
-    final result = await _checkSessionUseCase();
+    final result = await _repository.checkAuthState();
     result.fold(
       (_) => emit(const SessionState.unauthenticated()),
       (user) {
@@ -107,7 +98,7 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     SessionLogoutRequested event,
     Emitter<SessionState> emit,
   ) async {
-    await _logoutUseCase();
+    await _repository.logout();
     emit(const SessionState.unauthenticated());
   }
 

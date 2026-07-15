@@ -1,5 +1,4 @@
-import '../../imports/core_imports.dart';
-import '../../imports/packages_imports.dart';
+import '../../imports/imports.dart';
 
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar({
@@ -32,7 +31,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       } else if (canPop) {
         context.pop();
       } else {
-        context.go(AppRoutes.dashboard);
+        context.go(AppRoutes.home);
       }
     }
 

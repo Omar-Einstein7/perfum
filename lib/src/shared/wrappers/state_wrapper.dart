@@ -1,6 +1,5 @@
 import '../../imports/imports.dart';
-import '../../services/service_locator.dart';
-import '../../features/auth/presentation/providers/auth_bloc.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/presentation/providers/session_bloc.dart';
 
 /// A wrapper to initialize the chosen State Management library.
@@ -16,8 +15,7 @@ class StateWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<SessionBloc>.value(value: sl<SessionBloc>()),
-        BlocProvider<AuthBloc>.value(value: sl<AuthBloc>()),
+        BlocProvider<SessionBloc>(create: (_) => SessionBloc(repository: AuthRepositoryImpl())),
       ],
       child: child,
     );

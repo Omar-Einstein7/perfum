@@ -376,37 +376,45 @@ CupertinoThemeData buildCupertinoTheme({required String primaryColorHex}) {
     textTheme: CupertinoTextThemeData(
       primaryColor: seed,
       textStyle: const TextStyle(
+        
         fontSize: 17,
         letterSpacing: -0.41,
       ),
       actionTextStyle: TextStyle(
+        
         color: seed,
         fontSize: 17,
         fontWeight: FontWeight.w400,
       ),
       navTitleTextStyle: const TextStyle(
+        
         fontWeight: FontWeight.w600,
         fontSize: 17,
         letterSpacing: -0.41,
       ),
       navLargeTitleTextStyle: const TextStyle(
+        
         fontWeight: FontWeight.bold,
         fontSize: 34,
         letterSpacing: 0.41,
       ),
       tabLabelTextStyle: const TextStyle(
+        
         fontSize: 10,
         fontWeight: FontWeight.w500,
         letterSpacing: -0.24,
       ),
       pickerTextStyle: const TextStyle(
+        
         fontSize: 21,
         letterSpacing: -0.41,
       ),
       dateTimePickerTextStyle: const TextStyle(
+        
         fontSize: 21,
         letterSpacing: -0.41,
       ),
     ),
   );
 }
+

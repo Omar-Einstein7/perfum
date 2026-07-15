@@ -22,7 +22,7 @@ class AppEmptyState extends StatelessWidget {
     this.onAction,
   });
 
-  final IconData icon;
+  final dynamic icon;
   final String title;
   final String? subtitle;
   final String? actionLabel;
@@ -35,12 +35,12 @@ class AppEmptyState extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: EdgeInsets.all(40.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
-            const SizedBox(height: 20),
+            AppIcon(icon: icon, size: 64.sp, color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
+            SizedBox(height: 20.h),
             Text(
               title,
               style: tt.titleMedium?.copyWith(
@@ -50,7 +50,7 @@ class AppEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 subtitle!,
                 style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
@@ -58,7 +58,7 @@ class AppEmptyState extends StatelessWidget {
               ),
             ],
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 28),
+              SizedBox(height: 28.h),
               AppButton(
                 label: actionLabel!,
                 onPressed: onAction,

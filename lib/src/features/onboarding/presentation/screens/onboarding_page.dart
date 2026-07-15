@@ -1,25 +1,18 @@
-import 'package:perfum_ahmed_gaper/src/imports/core_imports.dart';
-import 'package:perfum_ahmed_gaper/src/imports/packages_imports.dart';
+import 'package:perfum_ahmed_gaper/src/imports/imports.dart';
 
-
-class OnboardingPage extends StatefulWidget {
+class OnboardingPage extends HookWidget {
   const OnboardingPage({super.key});
 
   @override
-  State<OnboardingPage> createState() => _OnboardingPageState();
-}
+  Widget build(BuildContext context) {
+    final theme = context.theme;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
-class _OnboardingPageState extends State<OnboardingPage> {
-  late final PageController _pageController;
-  int _currentIndex = 0;
+    final pageController = usePageController();
+    final currentIndex = useState(0);
 
-  late final List<Map<String, dynamic>> _onboardingData;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-    _onboardingData = [
+    final List<Map<String, dynamic>> onboardingData = useMemoized(() => [
       {
         'title': 'onboarding.onboarding_title_1'.tr(),
         'subtitle':
@@ -38,35 +31,22 @@ class _OnboardingPageState extends State<OnboardingPage> {
             'onboarding.onboarding_subtitle_3'.tr(),
         'pageWidget': const FlutterLogo(size: 200),
       },
-    ];
-  }
+    ]);
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _onGetStarted() {
-    // Navigate back or to home. For template purpose:
-    context.go(AppRoutes.login);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.theme;
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    void onGetStarted() {
+      // Navigate back or to home. For template purpose:
+      context.go(AppRoutes.login);
+    }
 
     return _OnboardingView(
       theme: theme,
       colorScheme: colorScheme,
       textTheme: textTheme,
-      pageController: _pageController,
-      currentIndex: _currentIndex,
-      onboardingData: _onboardingData,
-      onPageChanged: (index) => setState(() => _currentIndex = index),
-      onGetStarted: _onGetStarted,
+      pageController: pageController,
+      currentIndex: currentIndex.value,
+      onboardingData: onboardingData,
+      onPageChanged: (index) => currentIndex.value = index,
+      onGetStarted: onGetStarted,
     );
   }
 }
@@ -178,7 +158,7 @@ class _OnboardingView extends StatelessWidget {
               padding: EdgeInsets.all(AppSpacing.xl.w),
               child: Column(
                 children: [
-                   SizedBox(height: AppSpacing.xl.h),
+                   SizedBox(height: AppSpacing.xl),
                   // Get Started Button
                   AppButton(
                     label: 'shared.get_started'.tr(),
@@ -186,7 +166,7 @@ class _OnboardingView extends StatelessWidget {
                     variant: ButtonVariant.primary,
                     width: ButtonSize.medium,
                   ),
-                  SizedBox(height: AppSpacing.md.h),
+                  SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),

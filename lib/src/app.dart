@@ -5,20 +5,15 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget current = _buildMaterialApp(context);
-
-    current = ScreenUtilWrapper(child: current);
-
-    return current;
+    final current = _buildCupertinoApp(context);
+    return ScreenUtilWrapper(child: current);
   }
 
-  Widget _buildMaterialApp(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Flutter Starter',
+  Widget _buildCupertinoApp(BuildContext context) {
+    return CupertinoApp.router(
+      title: 'perfume_ahmed_gaber',
       debugShowCheckedModeBanner: false,
-      theme: buildLightTheme(primaryColorHex: '#6750A4'),
-      darkTheme: buildDarkTheme(primaryColorHex: '#6750A4'),
-      themeMode: ThemeMode.system,
+      theme: buildCupertinoTheme(primaryColorHex: '#a3b9f6'),
       routerConfig: appRouter,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
@@ -27,6 +22,16 @@ class App extends StatelessWidget {
         Widget current = child!;
         current = SkeletonWrapper(child: current);
         current = SessionListenerWrapper(child: current);
+        
+        // Ensure Material themes (tokens, widget styles like dialogs/buttons/inputs) 
+        // are available even in Cupertino mode, as many apps use a mix of both.
+        current = Theme(
+          data: (MediaQuery.of(context).platformBrightness == Brightness.dark)
+              ? buildDarkTheme(primaryColorHex: '#a3b9f6')
+              : buildLightTheme(primaryColorHex: '#a3b9f6'),
+          child: current,
+        );
+        
         return current;
       },
     );
