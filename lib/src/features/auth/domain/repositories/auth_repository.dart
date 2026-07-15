@@ -2,31 +2,14 @@ import 'package:perfum_ahmed_gaper/src/utils/utils.dart';
 import 'package:perfum_ahmed_gaper/src/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
-  /// Stream of auth state changes. Emits AppUser when authenticated, null when not.
-  Stream<AppUser?> get onAuthStateChanged;
+  Stream<bool> get onAuthStateChanged;
 
-  /// Sign in with email and password
-  FutureEither<AppUser> login({
-    required String email,
+  FutureEither<Employee> login({
+    required String username,
     required String password,
   });
 
-  /// Sign up with email, password, and optional name
-  FutureEither<AppUser> signUp({
-    required String name,
-    required String email,
-    required String password,
-  });
-
-  /// Send a password reset email
-  FutureEither<void> forgotPassword({
-    required String email,
-  });
-
-  /// Sign out the current user
   FutureEither<void> logout();
-  
-  /// Check if the user is currently authenticated natively
-  FutureEither<AppUser?> checkAuthState();
-}
 
+  FutureEither<bool> hasStoredSession();
+}

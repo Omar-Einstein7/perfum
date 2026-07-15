@@ -4,8 +4,7 @@ import '../utils/utils.dart';
 
 /// A service to retrieve detailed information about the current device.
 class DeviceInfoService {
-  DeviceInfoService._();
-  static final DeviceInfoService instance = DeviceInfoService._();
+  DeviceInfoService();
 
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 

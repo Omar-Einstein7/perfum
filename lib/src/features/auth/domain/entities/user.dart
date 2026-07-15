@@ -1,23 +1,32 @@
 import 'package:equatable/equatable.dart';
 
-class AppUser extends Equatable {
-  final String id;
-  final String email;
-  final String? name;
-  final String? photoUrl;
+class Employee extends Equatable {
+  final int id;
+  final String fullName;
+  final int branchId;
+  final Map<String, dynamic> permissions;
 
-  const AppUser({
+  const Employee({
     required this.id,
-    required this.email,
-    this.name,
-    this.photoUrl,
+    required this.fullName,
+    required this.branchId,
+    required this.permissions,
   });
 
-  factory AppUser.empty() => const AppUser(id: '', email: '');
+  bool get isEmpty => id == 0;
+  bool get isNotEmpty => id != 0;
 
-  bool get isEmpty => id.isEmpty;
-  bool get isNotEmpty => id.isNotEmpty;
+  bool hasPermission(String flag) => permissions[flag] == true;
+
+  factory Employee.fromJson(Map<String, dynamic> json) {
+    return Employee(
+      id: json['id'] as int,
+      fullName: json['fullName'] as String,
+      branchId: json['branchId'] as int,
+      permissions: (json['permissions'] as Map<String, dynamic>?) ?? {},
+    );
+  }
 
   @override
-  List<Object?> get props => [id, email, name, photoUrl];
+  List<Object?> get props => [id, fullName, branchId, permissions];
 }

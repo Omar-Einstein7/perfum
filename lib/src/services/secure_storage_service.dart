@@ -5,8 +5,7 @@ import '../utils/utils.dart';
 /// 
 /// Uses [FlutterSecureStorage] which utilizes Keychain (iOS) and Keystore (Android).
 class SecureStorageService {
-  SecureStorageService._();
-  static final SecureStorageService instance = SecureStorageService._();
+  SecureStorageService();
 
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions.defaultOptions,

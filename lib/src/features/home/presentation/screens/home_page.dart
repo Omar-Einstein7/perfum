@@ -1,8 +1,7 @@
 import 'package:perfum_ahmed_gaper/src/imports/core_imports.dart';
 import 'package:perfum_ahmed_gaper/src/imports/packages_imports.dart';
 
-import 'package:perfum_ahmed_gaper/src/features/auth/presentation/providers/session_bloc.dart';
-
+import 'package:perfum_ahmed_gaper/src/features/auth/presentation/providers/auth_bloc.dart';
 
 class HomePage extends HookWidget {
   const HomePage({super.key});
@@ -13,8 +12,8 @@ class HomePage extends HookWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    final session = context.watch<SessionBloc>().state;
-    final user = session.user;
+    final authState = context.watch<AuthBloc>().state;
+    final employee = authState.employee;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -35,7 +34,7 @@ class HomePage extends HookWidget {
               ),
               SizedBox(height: AppSpacing.lg.h),
               Text(
-                user?.name ?? user?.email ?? ('home.welcome_home'.tr()),
+                employee?.fullName ?? ('home.welcome_home'.tr()),
                 textAlign: TextAlign.center,
                 style: textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
@@ -43,16 +42,16 @@ class HomePage extends HookWidget {
                   fontSize: 28.sp,
                 ),
               ),
-                            SizedBox(height: AppSpacing.md.h),
+              SizedBox(height: AppSpacing.md.h),
               Text(
-                user != null && user.name != null ? user.email : ('home.home_subtitle'.tr()),
+                employee != null ? 'فرع رقم ${employee.branchId}' : ('home.home_subtitle'.tr()),
                 textAlign: TextAlign.center,
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontSize: 14.sp,
                 ),
               ),
-                          ],
+            ],
           ),
         ),
       ),

@@ -3,17 +3,15 @@ import '../utils/utils.dart';
 
 /// A wrapper around [SharedPreferences] for simple key-value persistence.
 class StorageService {
-  StorageService._();
-  static final StorageService instance = StorageService._();
+  StorageService();
 
   late final SharedPreferences _prefs;
 
-  /// Initialize SharedPreferences instance.
-  FutureEither<void> init() async {
-    return runTask(() async {
-      _prefs = await SharedPreferences.getInstance();
-      AppLogger.info('StorageService (SharedPreferences) initialized');
-    });
+  /// Initialize SharedPreferences and return this instance.
+  Future<StorageService> init() async {
+    _prefs = await SharedPreferences.getInstance();
+    AppLogger.info('StorageService (SharedPreferences) initialized');
+    return this;
   }
 
   // --- SETTERS ---

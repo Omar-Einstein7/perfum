@@ -25,6 +25,14 @@ class NetworkFailure extends Failure {
   const NetworkFailure(super.message, {super.error});
 }
 
+class AuthFailure extends Failure {
+  const AuthFailure(super.message, {super.error});
+}
+
+class ValidationFailure extends Failure {
+  const ValidationFailure(super.message, {super.error});
+}
+
 class UnknownFailure extends Failure {
   const UnknownFailure(super.message, {super.error});
 }

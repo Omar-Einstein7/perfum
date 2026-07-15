@@ -3,16 +3,14 @@ import '../utils/utils.dart';
 
 /// A robust [Hive] storage service for local NoSQL persistence.
 class HiveService {
-  HiveService._();
-  static final HiveService instance = HiveService._();
+  HiveService();
 
-  /// Initialize Hive and open a default box.
-  FutureEither<void> init() async {
-    return runTask(() async {
-      await Hive.initFlutter();
-      await Hive.openBox<dynamic>('app_box');
-      AppLogger.info('Hive initialized');
-    });
+  /// Initialize Hive, open the default box, and return this instance.
+  Future<HiveService> init() async {
+    await Hive.initFlutter();
+    await Hive.openBox<dynamic>('app_box');
+    AppLogger.info('Hive initialized');
+    return this;
   }
 
   /// Get data from the default box.

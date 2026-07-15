@@ -3,8 +3,7 @@ import '../utils/utils.dart';
 
 /// A service to handle device location requests and status checks.
 class LocationService {
-  LocationService._();
-  static final LocationService instance = LocationService._();
+  LocationService();
 
   /// Check the status of location permission.
   FutureEither<LocationPermission> checkPermission() async {

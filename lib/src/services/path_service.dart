@@ -4,8 +4,7 @@ import '../utils/utils.dart';
 
 /// A service to easily access platform-specific file system locations.
 class PathService {
-  PathService._();
-  static final PathService instance = PathService._();
+  PathService();
 
   /// Get the directory where the application may place data that is user-generated.
   FutureEither<Directory> getDocumentsDirectory() async => 

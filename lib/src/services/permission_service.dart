@@ -3,8 +3,7 @@ import '../utils/utils.dart';
 
 /// A service to handle device permission requests and status checks.
 class PermissionService {
-  PermissionService._();
-  static final PermissionService instance = PermissionService._();
+  PermissionService();
 
   /// Check the status of a specific permission.
   FutureEither<PermissionStatus> checkStatus(Permission permission) async {

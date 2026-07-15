@@ -5,8 +5,7 @@ import '../utils/utils.dart';
 
 /// A service to handle media selection (images, videos, files).
 class MediaService {
-  MediaService._();
-  static final MediaService instance = MediaService._();
+  MediaService();
 
 
   /// Pick one or more files from the device.

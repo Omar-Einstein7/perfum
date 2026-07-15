@@ -6,4 +6,5 @@ export 'storage_service.dart';
 export 'secure_storage_service.dart';
 export 'path_service.dart';
 export 'location_service.dart';
+export 'di_container.dart';
 

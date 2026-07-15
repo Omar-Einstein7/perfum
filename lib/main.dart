@@ -9,9 +9,9 @@ Future<void> main() async {
   
   await EasyLocalization.ensureInitialized();
   await dotenv.load(fileName: 'assets/.env');
-  
+
   await AppConfig.init();
-  await HiveService.instance.init();
+  await configureDependencies();
 
   runApp(
     const LocalizationWrapper(

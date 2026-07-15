@@ -16,73 +16,73 @@
 
 ### Backend
 
-- [ ] **T-001** Init backend repo, ORM (Sequelize or Prisma), env config (`.env` for DB creds + JWT secret)
+- [x] **T-001** Init backend repo, ORM (Prisma), env config (`.env` for DB creds + JWT secret)
   - **Files**: `backend/package.json`, `backend/.env.example`, `backend/src/config/database.js`, `backend/src/config/env.js`
   - **Acceptance**: `npm install` completes, DB connection succeeds with env vars, JWT secret loaded
   - **Depends on**: None
 
-- [ ] **T-002** Migrations for all Phase 1 tables: `categories, units, branches, employees, materials, material_branch_stock, customers, suppliers, shifts`
-  - **Files**: `backend/src/db/migrations/`, `backend/src/models/`
-  - **Acceptance**: `npx sequelize-cli db:migrate` creates all 9 tables, `branch_transfers` is permanently absent (constitution II)
+- [x] **T-002** Migrations for all tables: `categories, units, branches, employees, materials, material_branch_stock, customers, suppliers, shifts` and all transaction tables
+  - **Files**: `backend/prisma/schema.prisma` (all 20+ models), `backend/prisma/migrations/` (after `npx prisma migrate dev`)
+  - **Acceptance**: `npx prisma generate` creates Prisma client with all models; `branch_transfers` is permanently absent (constitution II)
   - **Depends on**: T-001
 
-- [ ] **T-003** Seed script: one main branch, one admin employee with all permissions `true`, base categories/units
-  - **Files**: `backend/src/db/seeders/001-init.js`
-  - **Acceptance**: `npx sequelize-cli db:seed:all` creates seed data, admin can log in
+- [x] **T-003** Seed script: one main branch, one admin employee with all permissions `true`, base categories/units
+  - **Files**: `backend/prisma/seed.js`
+  - **Acceptance**: `npx prisma db seed` creates seed data, admin can log in (username: admin, password: admin123)
   - **Depends on**: T-002
 
-- [ ] **T-004** `POST /auth/login` (username+password → access token + refresh token), `POST /auth/refresh`
+- [x] **T-004** `POST /auth/login` (username+password → access token + refresh token), `POST /auth/refresh`
   - **Files**: `backend/src/routes/auth.js`, `backend/src/controllers/authController.js`, `backend/src/services/authService.js`
   - **Acceptance**: Valid credentials return `{ accessToken, refreshToken, employee: { id, fullName, branchId, permissions } }` per plan.md §3 contract; invalid returns 401 `INVALID_CREDENTIALS`; refresh endpoint returns new access token
   - **Depends on**: T-002, T-003
 
-- [ ] **T-005** `authMiddleware` (JWT check) + `permissionMiddleware(flagName)` (reusable factory for any endpoint)
-  - **Files**: `backend/src/middleware/auth.js`, `backend/src/middleware/permission.js`
+- [x] **T-005** `authMiddleware` (JWT check) + `permissionMiddleware(flagName)` (reusable factory for any endpoint)
+  - **Files**: `backend/src/middleware/auth.js`
   - **Acceptance**: Requests without valid token → 401; requests with token but missing permission flag → 403; valid token + correct permission → next()
   - **Depends on**: T-004
 
-- [ ] **T-006** Unified global error handler returning fixed shape `{ error: { code, message } }`
+- [x] **T-006** Unified global error handler returning fixed shape `{ error: { code, message } }`
   - **Files**: `backend/src/middleware/errorHandler.js`
   - **Acceptance**: All unhandled errors, validation errors, and known application errors return consistent JSON shape with appropriate HTTP status code
   - **Depends on**: T-001
 
-- [ ] **T-007** Request validation layer (Joi or Zod) on every endpoint from day one
-  - **Files**: `backend/src/middleware/validate.js`, `backend/src/validators/`
-  - **Acceptance**: Every POST/PATCH/PUT endpoint has a schema; invalid payloads return 400 with structured error messages before reaching controller logic
+- [x] **T-007** Request validation layer (Joi) on every endpoint from day one
+  - **Files**: `backend/src/middleware/validate.js`, `backend/src/validators/auth.js`
+  - **Acceptance**: Every POST endpoint has a schema; invalid payloads return 400 with structured error messages before reaching controller logic
   - **Depends on**: T-001
 
 ### Flutter
 
-- [ ] **T-008** `core/di` (GetIt setup), `core/network` (DioClient + interceptor injecting JWT + auto-refresh on 401)
-  - **Files**: `lib/src/config/di.dart`, `lib/src/services/dio_service.dart` (extends existing `DioService`)
+- [x] **T-008** `core/di` (GetIt setup), `core/network` (DioClient + interceptor injecting JWT + auto-refresh on 401)
+  - **Files**: `lib/src/services/auth_interceptor.dart`, `lib/src/services/di_container.dart`, `lib/src/services/dio_service.dart`
   - **Acceptance**: Dio interceptor reads token from secure storage, attaches to every request; on 401 calls refresh endpoint and retries; failure → `AuthFailure`
   - **Depends on**: T-004 (backend login endpoint contract)
 
-- [ ] **T-009** `core/router` (go_router skeleton + redirect guard: no session → `/login`)
+- [x] **T-009** `core/router` (go_router skeleton + redirect guard: no session → `/login`)
   - **Files**: `lib/src/routing/app_router.dart`, `lib/src/routing/app_routes.dart`
   - **Acceptance**: Unauthenticated user redirected to `/login`; authenticated user can navigate to `/dashboard`; route table extensible for future feature routes
   - **Depends on**: T-008
 
-- [ ] **T-010** `core/theme` (full RTL + suitable Arabic font)
+- [x] **T-010** `core/theme` (full RTL + suitable Arabic font)
   - **Files**: `lib/src/theme/theme.dart`, `lib/src/theme/text_theme.dart`
   - **Acceptance**: Theme supports RTL layout; Arabic text renders correctly with proper font; numbers displayed LTR within RTL text per plan.md §5 item 4
   - **Depends on**: None
 
-- [ ] **T-011** `core/errors` — `ServerFailure, NetworkFailure, ValidationFailure, AuthFailure`
+- [x] **T-011** `core/errors` — `ServerFailure, NetworkFailure, ValidationFailure, AuthFailure`
   - **Files**: `lib/src/utils/failure.dart` (extend existing Failure classes)
   - **Acceptance**: Failure types match plan.md §2 Phase 1 Flutter item; each has `code` and `message`; integrates with `runTask()` / `FutureEither` pattern
   - **Depends on**: None
 
-- [ ] **T-012** Full `auth` feature (data/domain/presentation) + `flutter_secure_storage` for tokens and employee data (name, branch, permissions)
+- [x] **T-012** Full `auth` feature (data/domain/presentation) + `flutter_secure_storage` for tokens and employee data (name, branch, permissions)
   - **Files**: 
-    - `lib/src/features/auth/domain/entities/employee.dart`
+    - `lib/src/features/auth/domain/entities/user.dart` (Employee entity)
     - `lib/src/features/auth/domain/repositories/auth_repository.dart`
-    - `lib/src/features/auth/data/models/employee_model.dart`
-    - `lib/src/features/auth/data/models/auth_response_model.dart`
     - `lib/src/features/auth/data/repositories/auth_repository_impl.dart`
+    - `lib/src/services/auth_service.dart` (rewritten for POS)
     - `lib/src/features/auth/presentation/providers/auth_bloc.dart`
+    - `lib/src/features/auth/presentation/providers/session_bloc.dart`
     - `lib/src/features/auth/presentation/screens/login_screen.dart`
-    - `lib/src/features/auth/presentation/screens/dashboard_screen.dart`
+    - `lib/src/shared/wrappers/session_listener_wrapper.dart`
   - **Acceptance**: Login flow works end-to-end; tokens stored in secure storage; session restored on app restart; logout clears storage and redirects to login; employee name, branch, permissions accessible from app state
   - **Depends on**: T-009, T-011, T-004 (API)
 

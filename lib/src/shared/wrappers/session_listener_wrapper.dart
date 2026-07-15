@@ -16,9 +16,9 @@ class SessionListenerWrapper extends StatelessWidget {
         if (state.status != SessionStatus.unknown) {
           FlutterNativeSplash.remove();
           if (state.status == SessionStatus.authenticated) {
-            context.go(AppRoutes.home);
+            context.go(AppRoutes.dashboard);
           } else if (state.status == SessionStatus.unauthenticated) {
-            context.go(AppRoutes.onboarding);
+            context.go(AppRoutes.login);
           }
         }
       },

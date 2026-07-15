@@ -3,8 +3,7 @@ import '../imports/imports.dart';
 
 /// A service to handle URL launching operations.
 class UrlLauncherService {
-  UrlLauncherService._();
-  static final UrlLauncherService instance = UrlLauncherService._();
+  UrlLauncherService();
 
   /// Launch a URL string.
   FutureEither<void> launch(String url, {LaunchMode? mode}) async {

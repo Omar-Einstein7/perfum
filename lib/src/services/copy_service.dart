@@ -3,8 +3,7 @@ import '../utils/utils.dart';
 
 /// A service to handle clipboard operations.
 class CopyService {
-  CopyService._();
-  static final CopyService instance = CopyService._();
+  CopyService();
 
   /// Copy text to the system clipboard.
   FutureEither<void> copy(String text) async {

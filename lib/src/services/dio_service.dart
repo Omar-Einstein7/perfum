@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
-import '../config/app_config.dart';
 import '../utils/utils.dart';
 
 /// A robust networking service powered by Dio.
 class DioService {
-  DioService._();
-  static final DioService instance = DioService._();
+  final Dio _dio;
+
+  DioService(this._dio);
 
   // --- HTTP Methods ---
 
@@ -13,7 +13,7 @@ class DioService {
     String path, {
     Map<String, dynamic>? queryParameters,
   }) {
-    return runTask(() => AppConfig.dio.get(path, queryParameters: queryParameters), requiresNetwork: true);
+    return runTask(() => _dio.get(path, queryParameters: queryParameters), requiresNetwork: true);
   }
 
   FutureEither<Response<dynamic>> post(
@@ -21,7 +21,7 @@ class DioService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) {
-    return runTask(() => AppConfig.dio.post(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
+    return runTask(() => _dio.post(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
   }
 
   FutureEither<Response<dynamic>> put(
@@ -29,7 +29,7 @@ class DioService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) {
-    return runTask(() => AppConfig.dio.put(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
+    return runTask(() => _dio.put(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
   }
 
   FutureEither<Response<dynamic>> patch(
@@ -37,7 +37,7 @@ class DioService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) {
-    return runTask(() => AppConfig.dio.patch(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
+    return runTask(() => _dio.patch(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
   }
 
   FutureEither<Response<dynamic>> delete(
@@ -45,6 +45,6 @@ class DioService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) {
-    return runTask(() => AppConfig.dio.delete(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
+    return runTask(() => _dio.delete(path, data: data, queryParameters: queryParameters), requiresNetwork: true);
   }
 }

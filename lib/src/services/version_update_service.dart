@@ -5,8 +5,7 @@ import '../imports/imports.dart';
 /// A service to check for app updates and manage version information using
 /// the `app_version_update` package.
 class VersionUpdateService {
-  VersionUpdateService._();
-  static final VersionUpdateService instance = VersionUpdateService._();
+  VersionUpdateService();
 
   /// Check if a newer version of the app is available in the store.
   FutureEither<AppVersionResult?> checkForUpdate({

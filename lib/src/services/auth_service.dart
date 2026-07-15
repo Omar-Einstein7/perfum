@@ -1,71 +1,60 @@
 import 'dart:async';
 import '../utils/utils.dart';
-import '../config/app_config.dart';
 import 'package:dio/dio.dart';
+import 'secure_storage_service.dart';
 
 class AuthService {
-  AuthService._();
-  static final AuthService instance = AuthService._();
+  final Dio _dio;
+  final SecureStorageService _secureStorage;
 
-  Dio get _dio => AppConfig.dio;
+  AuthService(this._dio) : _secureStorage = SecureStorageService();
 
-  // Custom Backend doesn't have a built-in auth state stream, so we manage our own
-  final StreamController<Map<String, dynamic>?> _authStateController =
-      StreamController<Map<String, dynamic>?>.broadcast();
+  final StreamController<bool> _authStateController = StreamController<bool>.broadcast();
 
-  /// Stream of auth state changes. Emits the current user map or null.
-  Stream<Map<String, dynamic>?> get authStateChanges => _authStateController.stream;
+  Stream<bool> get authStateChanges => _authStateController.stream;
 
-  FutureEither<Map<String, dynamic>?> login({
-    required String email,
+  FutureEither<Map<String, dynamic>> login({
+    required String username,
     required String password,
   }) async {
     return runTask(() async {
       final response = await _dio.post<Map<String, dynamic>>('/auth/login', data: {
-        'email': email,
+        'username': username,
         'password': password,
       });
       final data = response.data!;
-      _authStateController.add(data);
-      return data;
+      await _secureStorage.write('access_token', data['accessToken'] as String);
+      await _secureStorage.write('refresh_token', data['refreshToken'] as String);
+      _authStateController.add(true);
+      return data['employee'] as Map<String, dynamic>;
     }, requiresNetwork: true);
   }
 
-  FutureEither<Map<String, dynamic>?> signUp({
-    required String name,
-    required String email,
-    required String password,
-  }) async {
+  FutureEither<Map<String, dynamic>> refreshToken(String refreshToken) async {
     return runTask(() async {
-      final response = await _dio.post<Map<String, dynamic>>('/auth/signup', data: {
-        'name': name,
-        'email': email,
-        'password': password,
+      final response = await _dio.post<Map<String, dynamic>>('/auth/refresh', data: {
+        'refreshToken': refreshToken,
       });
       final data = response.data!;
-      _authStateController.add(data);
-      return data;
-    }, requiresNetwork: true);
-  }
-
-  FutureEither<void> forgotPassword({required String email}) async {
-    return runTask(() async {
-      await _dio.post<void>('/auth/forgot-password', data: {'email': email});
+      await _secureStorage.write('access_token', data['accessToken'] as String);
+      if (data['refreshToken'] != null) {
+        await _secureStorage.write('refresh_token', data['refreshToken'] as String);
+      }
+      return data['employee'] as Map<String, dynamic>;
     }, requiresNetwork: true);
   }
 
   FutureEither<void> logout() async {
     return runTask(() async {
-      await _dio.post<void>('/auth/logout');
-      _authStateController.add(null);
-    }, requiresNetwork: true);
+      await _secureStorage.delete('access_token');
+      await _secureStorage.delete('refresh_token');
+      _authStateController.add(false);
+    });
   }
 
-  FutureEither<Map<String, dynamic>?> getCurrentUser() async {
-    return runTask(() async {
-      final response = await _dio.get<Map<String, dynamic>>('/auth/me');
-      return response.data;
-    });
+  FutureEither<bool> hasStoredSession() async {
+    final result = await _secureStorage.read('access_token');
+    return result.map((token) => token != null && token.isNotEmpty);
   }
 
   void dispose() {

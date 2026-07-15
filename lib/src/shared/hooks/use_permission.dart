@@ -1,6 +1,7 @@
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../services/permission_service.dart';
+import '../../services/di_container.dart';
 
 /// A hook to manage permission lifecycle and status with loading state.
 (PermissionStatus, bool, Future<void> Function()) usePermission(Permission permission) {
@@ -10,7 +11,7 @@ import '../../services/permission_service.dart';
   Future<void> check() async {
     isLoading.value = true;
     try {
-      final result = await PermissionService.instance.checkStatus(permission);
+      final result = await sl<PermissionService>().checkStatus(permission);
       result.fold(
         (f) => null,
         (s) => status.value = s,
@@ -23,7 +24,7 @@ import '../../services/permission_service.dart';
   Future<void> request() async {
     isLoading.value = true;
     try {
-      final result = await PermissionService.instance.request(permission);
+      final result = await sl<PermissionService>().request(permission);
       result.fold(
         (f) => null,
         (s) => status.value = s,

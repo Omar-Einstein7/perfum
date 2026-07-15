@@ -3,7 +3,6 @@ import 'package:perfum_ahmed_gaper/src/imports/imports.dart';
 import 'package:perfum_ahmed_gaper/src/features/auth/domain/entities/user.dart';
 import 'package:perfum_ahmed_gaper/src/features/auth/domain/repositories/auth_repository.dart';
 
-/// Session events
 abstract class SessionEvent extends Equatable {
   const SessionEvent();
   @override
@@ -14,49 +13,35 @@ class SessionCheckRequested extends SessionEvent {
   const SessionCheckRequested();
 }
 
-class SessionUserChanged extends SessionEvent {
-  final AppUser? user;
-  const SessionUserChanged(this.user);
-  @override
-  List<Object?> get props => [user];
-}
-
 class SessionLogoutRequested extends SessionEvent {
   const SessionLogoutRequested();
 }
 
-/// Session states
 enum SessionStatus { unknown, authenticated, unauthenticated }
 
 class SessionState extends Equatable {
   final SessionStatus status;
-  final AppUser? user;
 
-  const SessionState({
-    this.status = SessionStatus.unknown,
-    this.user,
-  });
+  const SessionState({this.status = SessionStatus.unknown});
 
   const SessionState.unknown() : this();
-  const SessionState.authenticated(AppUser user) : this(status: SessionStatus.authenticated, user: user);
+  const SessionState.authenticated() : this(status: SessionStatus.authenticated);
   const SessionState.unauthenticated() : this(status: SessionStatus.unauthenticated);
 
   @override
-  List<Object?> get props => [status, user];
+  List<Object?> get props => [status];
 }
 
 class SessionBloc extends Bloc<SessionEvent, SessionState> {
   final AuthRepository _repository;
-  StreamSubscription<AppUser?>? _authSub;
+  StreamSubscription<bool>? _authSub;
 
   SessionBloc({required AuthRepository repository})
       : _repository = repository,
         super(const SessionState.unknown()) {
     on<SessionCheckRequested>(_onCheckRequested);
-    on<SessionUserChanged>(_onUserChanged);
     on<SessionLogoutRequested>(_onLogoutRequested);
 
-    // Start checking
     add(const SessionCheckRequested());
   }
 
@@ -64,34 +49,26 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     SessionCheckRequested event,
     Emitter<SessionState> emit,
   ) async {
-    final result = await _repository.checkAuthState();
-    result.fold(
+    final hasSession = await _repository.hasStoredSession();
+    hasSession.fold(
       (_) => emit(const SessionState.unauthenticated()),
-      (user) {
-        if (user != null) {
-          emit(SessionState.authenticated(user));
+      (hasToken) {
+        if (hasToken) {
+          emit(const SessionState.authenticated());
         } else {
           emit(const SessionState.unauthenticated());
         }
       },
     );
 
-    // Listen for future changes
     await _authSub?.cancel();
-    _authSub = _repository.onAuthStateChanged.listen((user) {
-      add(SessionUserChanged(user));
+    _authSub = _repository.onAuthStateChanged.listen((isAuthenticated) {
+      if (isAuthenticated) {
+        emit(const SessionState.authenticated());
+      } else {
+        emit(const SessionState.unauthenticated());
+      }
     });
-  }
-
-  void _onUserChanged(
-    SessionUserChanged event,
-    Emitter<SessionState> emit,
-  ) {
-    if (event.user != null) {
-      emit(SessionState.authenticated(event.user!));
-    } else {
-      emit(const SessionState.unauthenticated());
-    }
   }
 
   Future<void> _onLogoutRequested(
@@ -108,4 +85,3 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
     return super.close();
   }
 }
-
